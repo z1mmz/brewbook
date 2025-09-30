@@ -1,0 +1,67 @@
+### Login - Successful
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "password": "testpassword"
+}
+
+### Login - Wrong Password
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "password": "wrongpassword"
+}
+
+### Login - Missing Fields
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "username": "testuser"
+}
+
+### Login - Nonexistent User
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "username": "nouser",
+    "password": "any"
+}
+### Create User - Successful
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+    "username": "newuser",
+    "password": "newpassword"
+}
+
+### Create User - Missing Password
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+    "username": "newuser2"
+}
+
+### Create User - Missing Username
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+    "password": "somepassword"
+}
+
+### Create User - Existing Username
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "password": "anotherpassword"
+}

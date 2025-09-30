@@ -1,4 +1,5 @@
 const express = require('express')
+const db = require('./utils/db')
 
 const middleware = require('./utils/middleware')
 const recipesRouter = require('./controllers/recipes')
