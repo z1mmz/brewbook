@@ -55,4 +55,5 @@ button:focus-visible {
 .listPane.shrunk {
   flex: 0 0 28rem;     /* ~450px */
   max-width: 35vw;     /* cap width on very wide screens */
+  overflow: hidden;
 }

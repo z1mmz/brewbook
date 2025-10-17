@@ -1,9 +1,10 @@
 import { useState, useEffect} from 'react'
-import editor from './components/editor'
+import Editor from './components/editor'
 import './App.css'
 import Recipe from './components/recipe'
 import login from './services/login'
 import recipeService from './services/recipes'
+
 
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
   const [message, setMessage] = useState(null)
   const [messageType, setMessageType] = useState(null)
   const [selectedRecipe, setSelectedRecipe] = useState(null)
+  const [editorVisible, setEditorVisible] = useState(false)
 
   const getAllRecipes = async () => {
     recipeService.getAll().then(recipes =>
@@ -57,7 +59,13 @@ function App() {
     console.log(`expand recipe ${recipe.id}`)
     setSelectedRecipe(recipe)
   }
-
+  const handleSubmitNewRecipe = (recipe) => {
+    recipeService.createRecipe(recipe)
+    setRecipes(recipes.concat(recipe))
+    setEditorVisible(false)
+    statusMessage(`A new recipe ${recipe.title} added`, 'success')
+  }
+ 
   const loginForm = (
     <form onSubmit={handleLogin}>
       <div>
@@ -72,18 +80,21 @@ function App() {
 
 
   const recipeList = (<div> {recipes.map(recipe =>
-    <li key={recipe.id}>{recipe.title} <button onClick={() => handleExpand(recipe)}>Expand</button></li>
+    <li key={recipe.id}><button onClick={() => handleExpand(recipe)}>{recipe.title}</button></li>
   )}</div>)
 
   console.log(recipeList)
 
   return (
   <div style={{ display: 'flex', flexDirection: 'row', gap: '20px' }}>
+
     <div className={`listPane ${selectedRecipe ? 'shrunk' : ''}`}>
+      
     {user === null ? loginForm : <div>{user.name} logged in <button onClick={handleLogout}>Logout</button></div>}
+    {user === null ? null : <button onClick={()=>(setEditorVisible(!editorVisible))}>New recipe</button>}
     <ul className='list'>{recipeList}</ul>
     </div>
- 
+    {editorVisible && <Editor saveRecipe={handleSubmitNewRecipe}></Editor>}
     {selectedRecipe && <Recipe user={user} recipe={selectedRecipe} handleClose={()=>{setSelectedRecipe(null)}}/> }
 
   </div>

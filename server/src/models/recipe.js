@@ -6,7 +6,19 @@ const recipeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    recipe: {
+    dose: {
+        type: Number,
+        required: true
+    },
+    grind: {
+        type: String,
+        required: true
+    },
+    water: {
+        type: Number,
+        required: true
+    },
+    steps: {
         type: JSON,
         required: true
     },
