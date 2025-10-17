@@ -5,6 +5,7 @@ import Recipe from './components/recipe'
 import login from './services/login'
 import recipeService from './services/recipes'
 
+
 function App() {
   const [recipes, setRecipes] = useState([])
   const [user, setUser] = useState(null)
@@ -12,7 +13,7 @@ function App() {
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState(null)
   const [messageType, setMessageType] = useState(null)
-
+  const [selectedRecipe, setSelectedRecipe] = useState(null)
 
   const getAllRecipes = async () => {
     recipeService.getAll().then(recipes =>
@@ -52,7 +53,10 @@ function App() {
     window.localStorage.removeItem('brewbookLoggedInUser')
     setUser(null)
   }
-
+  const handleExpand = (recipe) => {
+    console.log(`expand recipe ${recipe.id}`)
+    setSelectedRecipe(recipe)
+  }
 
   const loginForm = (
     <form onSubmit={handleLogin}>
@@ -68,17 +72,21 @@ function App() {
 
 
   const recipeList = (<div> {recipes.map(recipe =>
-    <Recipe key={recipe.id} user={user} recipe={recipe}/>
+    <li key={recipe.id}>{recipe.title} <button onClick={() => handleExpand(recipe)}>Expand</button></li>
   )}</div>)
 
   console.log(recipeList)
 
   return (
-    <>
-    <h1>brewbook</h1>
+  <div style={{ display: 'flex', flexDirection: 'row', gap: '20px' }}>
+    <div className={`listPane ${selectedRecipe ? 'shrunk' : ''}`}>
     {user === null ? loginForm : <div>{user.name} logged in <button onClick={handleLogout}>Logout</button></div>}
-    <div>{recipeList}</div>
-    </>
+    <ul className='list'>{recipeList}</ul>
+    </div>
+ 
+    {selectedRecipe && <Recipe user={user} recipe={selectedRecipe} handleClose={()=>{setSelectedRecipe(null)}}/> }
+
+  </div>
   )
 }
 
