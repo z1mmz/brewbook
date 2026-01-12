@@ -1,13 +1,10 @@
-import { useState, useEffect } from "react";
-import Editor from "./components/editor";
+import { Routes, Route } from "react-router";
 import "./App.css";
-import Recipe from "./components/recipe";
-import login from "./services/login";
 import useRecipes from "./hooks/useRecipes";
 
 function App() {
   const { recipes } = useRecipes();
-
+  console.log("Recipes in App.jsx:", recipes);
   const recipeList = (
     <div>
       {" "}
@@ -22,9 +19,16 @@ function App() {
   console.log(recipeList);
 
   return (
-    <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+    <div>
       <h2>Brewbook</h2>
-      {recipeList}
+      <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+        <Routes>
+          <Route path="/" element={<div>{recipeList}</div>} />
+          <Route path="/recipes/:id" element={<div>Recipe Details Page</div>} />
+          <Route path="/create" element={<div>Create Recipe Page</div>} />
+          <Route path="*" element={<div>404 Not Found</div>} />
+        </Routes>
+      </div>
     </div>
   );
 }
