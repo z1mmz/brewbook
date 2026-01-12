@@ -1,23 +1,27 @@
-import axios from 'axios'
-const baseUrl = '/api/recipes'
+import axios from "axios";
+const baseUrl = "/api/recipes";
 
-let token = null
+let token = null;
 const setToken = (newToken) => {
-  token = `Bearer ${newToken}`
-  console.log(token)
-}
+  token = `Bearer ${newToken}`;
+  console.log(token);
+};
 
 const getAll = () => {
-  const request = axios.get(baseUrl)
-  return request.then(response => response.data)
-}
+  const request = axios.get(baseUrl);
+  return request.then((response) => response.data);
+};
+const getRecipe = (id) => {
+  const request = axios.get(`${baseUrl}/${id}`);
+  return request.then((response) => response.data);
+};
 const createRecipe = async (recipe) => {
-  console.log('creating recipe', recipe)
+  console.log("creating recipe", recipe);
   const config = {
     headers: { Authorization: token },
-  }
-  const response = await axios.post(baseUrl, recipe, config)
-  return response.data
-}
+  };
+  const response = await axios.post(baseUrl, recipe, config);
+  return response.data;
+};
 
-export default { getAll,createRecipe ,setToken }
+export default { getAll, getRecipe, createRecipe, setToken };
