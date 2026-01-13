@@ -1,4 +1,4 @@
-:root {
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -56,4 +56,4 @@ button:focus-visible {
   flex: 0 0 28rem;     /* ~450px */
   max-width: 35vw;     /* cap width on very wide screens */
   overflow: hidden;
-}
+} */

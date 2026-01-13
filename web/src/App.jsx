@@ -1,17 +1,35 @@
-import { Routes, Route } from "react-router";
+import { Routes, Route, Link } from "react-router";
 import "./App.css";
 import Recipe from "./components/recipe";
 import RecipeList from "./components/recipeList";
 import RecipeCreator from "./components/recipeCreator";
+import { HStack } from "@chakra-ui/react";
+import { useContext } from "react";
+import LoginContext from "./loginContext";
+import LoginForm from "./components/loginForm";
+import SignupForm from "./components/signupForm";
 function App() {
+  const { loggedInUser, loggedInUserDispatch } = useContext(LoginContext);
   return (
     <div>
-      <h2>Brewbook</h2>
-      <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+      {/* Nav bar */}
+      <HStack>
+        <Link to={"/"}>BrewBook</Link>
+        <Link to={"/recipes"}>Recipes</Link>
+        {loggedInUser ? (
+          <div>{loggedInUser.username} logged in</div>
+        ) : (
+          <Link to={"/login"}>Login</Link>
+        )}
+      </HStack>
+      <div>
         <Routes>
-          <Route path="/" element={<RecipeList />} />
+          <Route path="/" element={<h2>Welcome to brewbook</h2>} />
+          <Route path="/recipes" element={<RecipeList />} />
           <Route path="/recipes/:id" element={<Recipe />} />
           <Route path="/recipes/create" element={<RecipeCreator />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/signup" element={<SignupForm />} />
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </div>
