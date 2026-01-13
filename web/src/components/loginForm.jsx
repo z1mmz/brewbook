@@ -9,16 +9,22 @@ import {
   Link as ChakraLink,
 } from "@chakra-ui/react";
 import { PasswordInput, PasswordStrengthMeter } from "./ui/password-input";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 function LoginForm() {
   const { login } = useLogin();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [visible, setVisible] = useState(false);
+  const navigate = useNavigate();
   const handleLogin = (event) => {
     event.preventDefault();
-    login({ username, password });
+    try {
+      login({ username, password });
+      navigate("/");
+    } catch (error) {
+      console.error("Error logging in:", error);
+    }
   };
 
   return (
@@ -38,7 +44,7 @@ function LoginForm() {
             onChange={({ target }) => setUsername(target.value)}
           />
         </Field.Root>
-        <Field.Root>
+        <Field.Root mb={4}>
           <Field.Label>Password</Field.Label>
           <PasswordInput
             value={password}
@@ -47,8 +53,9 @@ function LoginForm() {
             onVisibleChange={setVisible}
           />
         </Field.Root>
+        <Button type="submit">Login</Button>
       </form>
-      <Button type="submit">Login</Button>
+
       <div>
         Dont have an account?{" "}
         <ChakraLink asChild>

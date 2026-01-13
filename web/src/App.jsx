@@ -3,25 +3,14 @@ import "./App.css";
 import Recipe from "./components/recipe";
 import RecipeList from "./components/recipeList";
 import RecipeCreator from "./components/recipeCreator";
-import { HStack } from "@chakra-ui/react";
-import { useContext } from "react";
-import LoginContext from "./loginContext";
+
 import LoginForm from "./components/loginForm";
 import SignupForm from "./components/signupForm";
+import NavBar from "./components/navBar";
 function App() {
-  const { loggedInUser, loggedInUserDispatch } = useContext(LoginContext);
   return (
     <div>
-      {/* Nav bar */}
-      <HStack>
-        <Link to={"/"}>BrewBook</Link>
-        <Link to={"/recipes"}>Recipes</Link>
-        {loggedInUser ? (
-          <div>{loggedInUser.username} logged in</div>
-        ) : (
-          <Link to={"/login"}>Login</Link>
-        )}
-      </HStack>
+      <NavBar />
       <div>
         <Routes>
           <Route path="/" element={<h2>Welcome to brewbook</h2>} />

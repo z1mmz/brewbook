@@ -2,17 +2,34 @@ import { Flex, Heading, Link as ChakraLink } from "@chakra-ui/react";
 import { Field, Input, Button } from "@chakra-ui/react";
 import { PasswordInput } from "./ui/password-input";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useUser } from "../hooks/userUsers";
 
 function SignupForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [visible, setVisible] = useState(false);
+  const navigate = useNavigate();
+  const { createUser } = useUser();
 
   const handleSignUp = (event) => {
     event.preventDefault();
+    console.log(event.target);
+    try {
+      createUser({ username, password, email });
+      navigate("/login");
+    } catch (error) {
+      console.error("Error creating user:", error);
+    }
     // Sign up logic here
+  };
+  const clearForm = (event) => {
+    event.preventDefault();
+    // Sign up logic here
+    setUsername("");
+    setPassword("");
+    setEmail("");
   };
 
   return (
@@ -40,7 +57,7 @@ function SignupForm() {
             onChange={({ target }) => setUsername(target.value)}
           />
         </Field.Root>
-        <Field.Root>
+        <Field.Root mb={4}>
           <Field.Label>Password</Field.Label>
           <PasswordInput
             value={password}
@@ -49,10 +66,14 @@ function SignupForm() {
             onVisibleChange={setVisible}
           />
         </Field.Root>
+        <div>
+          <Button onClick={clearForm}>Cancel</Button>{" "}
+          <Button type="submit">Signup</Button>
+        </div>
       </form>
-      <Button type="submit">Login</Button>
+
       <div>
-        Gave an account?{" "}
+        Have an account?{" "}
         <ChakraLink asChild>
           <Link to="/login">Login here</Link>
         </ChakraLink>
