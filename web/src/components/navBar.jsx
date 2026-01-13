@@ -1,15 +1,13 @@
 import { HStack, IconButton, Menu, Link as ChakraLink } from "@chakra-ui/react";
-import HamburgerIcon from "./ui/HamburgerIcon";
-import { Link, useNavigate } from "react-router";
-import { Icon } from "@chakra-ui/react";
+import { Link } from "react-router";
 import LoginContext from "../loginContext";
 import { useLogin } from "../hooks/useLogin";
 import { useContext } from "react";
 import { Menu as MenuIcon } from "lucide-react";
 export default function NavBar() {
-  const { loggedInUser, loggedInUserDispatch } = useContext(LoginContext);
+  const { loggedInUser } = useContext(LoginContext);
   const { logout } = useLogin();
-  const navigate = useNavigate();
+
   return (
     <HStack
       as="nav"
