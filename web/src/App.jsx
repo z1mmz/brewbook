@@ -3,10 +3,10 @@ import "./App.css";
 import Recipe from "./components/recipe";
 import RecipeList from "./components/recipeList";
 import RecipeCreator from "./components/recipeCreator";
-
 import LoginForm from "./components/loginForm";
 import SignupForm from "./components/signupForm";
 import NavBar from "./components/navBar";
+
 function App() {
   return (
     <div>
@@ -19,6 +19,7 @@ function App() {
           <Route path="/recipes/create" element={<RecipeCreator />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
+          <Route path="/create" element={<RecipeCreator />} />
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </div>
