@@ -24,18 +24,17 @@ recipeRouter.get("/:id", async (request, response) => {
   response.json(recipe);
 });
 
-// recipeRouter.post('/',middleware.userExtractor, async(request, response) => {
-recipeRouter.post("/", async (request, response) => {
-  // const user = request.user;
-  // if (!user) {
-  //   return response.status(400).json({ error: "UserId missing or not valid" });
-  // }
+recipeRouter.post("/", middleware.userExtractor, async (request, response) => {
+  const user = request.user;
+  if (!user) {
+    return response.status(400).json({ error: "UserId missing or not valid" });
+  }
 
   const recipe = new Recipe(request.body);
-  // recipe.user = user.id;
+  recipe.user = user.id;
   const result = await recipe.save();
-  // user.recipes = user.recipes.concat(result._id);
-  // await user.save();
+  user.recipes = user.recipes.concat(result._id);
+  await user.save();
 
   response.status(201).json(result);
 });

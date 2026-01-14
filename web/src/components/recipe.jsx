@@ -14,7 +14,7 @@ function Recipe() {
         {recipe.title}
       </Heading>
       {recipe.description ? <p>{recipe.description}</p> : null}
-      {/* <p>by: {recipe.user.username ? recipe.user.username : null}</p> */}
+      <p>by: {recipe.user.username ? recipe.user.username : null}</p>
       <p>Dose:{recipe.dose}</p>
       <p>Gind size:{recipe.grind}</p>
       <p>water:{recipe.water}</p>
