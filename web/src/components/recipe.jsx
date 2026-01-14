@@ -1,6 +1,7 @@
 import { useParams } from "react-router";
 import useRecipes from "../hooks/useRecipes";
-
+import { Heading, VStack } from "@chakra-ui/react";
+import RecipeStep from "./recipeStep";
 function Recipe() {
   const { id } = useParams();
   const { recipes } = useRecipes();
@@ -9,15 +10,25 @@ function Recipe() {
 
   return (
     <div>
-      {id}
-      <h1>{recipe.title}</h1>
+      <Heading mt={4} mb={4}>
+        {recipe.title}
+      </Heading>
+      {recipe.description ? <p>{recipe.description}</p> : null}
       {/* <p>by: {recipe.user.username ? recipe.user.username : null}</p> */}
       <p>Dose:{recipe.dose}</p>
       <p>Gind size:{recipe.grind}</p>
       <p>water:{recipe.water}</p>
-      {/* <div style={{ overflow: "scroll" }}>
-        <pre>{JSON.stringify(recipe.steps, null, 2)}</pre>
-      </div> */}
+
+      <Heading mt={4} mb={4}>
+        Steps:
+      </Heading>
+      <VStack spacing={4} align="stretch">
+        {recipe.steps
+          ? recipe.steps.map((step, index) => (
+              <RecipeStep key={index} step={step} index={index} />
+            ))
+          : null}
+      </VStack>
     </div>
   );
 }
