@@ -1,19 +1,25 @@
 import { useMemo, useState } from "react";
 import useRecipe from "../hooks/useRecipe";
+
 const emptyStep = () => ({
   title: "",
   notes: "",
-  timeSec: "", // optional (string for input)
-  waterMl: "", // optional (string for input)
+  timeSec: "",
+  waterMl: "",
 });
 
 export default function RecipeCreator() {
   const [title, setTitle] = useState("");
   const [grind, setGrind] = useState("");
   const [water, setWater] = useState("");
+  const [description, setDescription] = useState("");
   const [dose, setDose] = useState("");
   const [steps, setSteps] = useState([emptyStep()]);
-  const [submitError, setSubmitError] = useState("");
+  const [submitError, setSubmitError] = useState(null);
+
+  // ✅ new flag
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
   const { createRecipe } = useRecipe();
 
   const errors = useMemo(() => {
@@ -58,6 +64,10 @@ export default function RecipeCreator() {
 
   const isValid = Object.keys(errors).length === 0;
 
+  // only show errors after submit attempt
+  const showErrors = hasSubmitted;
+  const shownErrors = showErrors ? errors : {};
+
   function updateStep(index, patch) {
     setSteps((prev) =>
       prev.map((s, i) => (i === index ? { ...s, ...patch } : s))
@@ -76,7 +86,8 @@ export default function RecipeCreator() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    setSubmitError("");
+    setHasSubmitted(true);
+    setSubmitError(null);
 
     if (!isValid) {
       setSubmitError("Please fix the errors above before submitting.");
@@ -88,10 +99,10 @@ export default function RecipeCreator() {
       grind: grind.trim(),
       water: Number(water),
       dose: Number(dose),
+      description: description.trim(),
       steps: steps.map((s) => ({
         title: s.title.trim(),
         ...(s.notes === "" ? {} : { notes: s.notes.trim() }),
-        // optional fields: include only if provided
         ...(s.timeSec === "" ? {} : { timeSec: Number(s.timeSec) }),
         ...(s.waterMl === "" ? {} : { waterMl: Number(s.waterMl) }),
       })),
@@ -100,7 +111,6 @@ export default function RecipeCreator() {
     createRecipe(recipe);
   }
 
-  // Optional: compute totals for UX feedback
   const stepWaterSum = useMemo(() => {
     return steps.reduce(
       (acc, s) => acc + (s.waterMl === "" ? 0 : Number(s.waterMl) || 0),
@@ -134,8 +144,8 @@ export default function RecipeCreator() {
               style={{ width: "100%" }}
             />
           </label>
-          {errors.title && (
-            <div style={{ color: "crimson" }}>{errors.title}</div>
+          {shownErrors.title && (
+            <div style={{ color: "crimson" }}>{shownErrors.title}</div>
           )}
         </div>
 
@@ -149,8 +159,22 @@ export default function RecipeCreator() {
               style={{ width: "100%" }}
             />
           </label>
-          {errors.grindSize && (
-            <div style={{ color: "crimson" }}>{errors.grindSize}</div>
+          {shownErrors.grindSize && (
+            <div style={{ color: "crimson" }}>{shownErrors.grindSize}</div>
+          )}
+        </div>
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>
+            Description *
+            <input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g., Iced pour-over for hot days"
+              style={{ width: "100%" }}
+            />
+          </label>
+          {shownErrors.grindSize && (
+            <div style={{ color: "crimson" }}>{shownErrors.grindSize}</div>
           )}
         </div>
 
@@ -168,8 +192,8 @@ export default function RecipeCreator() {
                 style={{ width: "100%" }}
               />
             </label>
-            {errors.waterTotalMl && (
-              <div style={{ color: "crimson" }}>{errors.waterTotalMl}</div>
+            {shownErrors.waterTotalMl && (
+              <div style={{ color: "crimson" }}>{shownErrors.waterTotalMl}</div>
             )}
           </div>
 
@@ -184,8 +208,8 @@ export default function RecipeCreator() {
                 style={{ width: "100%" }}
               />
             </label>
-            {errors.coffeeGrams && (
-              <div style={{ color: "crimson" }}>{errors.coffeeGrams}</div>
+            {shownErrors.coffeeGrams && (
+              <div style={{ color: "crimson" }}>{shownErrors.coffeeGrams}</div>
             )}
           </div>
         </div>
@@ -216,7 +240,7 @@ export default function RecipeCreator() {
         </div>
 
         {steps.map((step, idx) => {
-          const stepErr = errors.steps?.[idx] ?? {};
+          const stepErr = shownErrors.steps?.[idx] ?? {};
           return (
             <div
               key={idx}
@@ -262,7 +286,7 @@ export default function RecipeCreator() {
 
               <div style={{ display: "grid", gap: 6 }}>
                 <label>
-                  Notes *
+                  Notes
                   <textarea
                     value={step.notes}
                     onChange={(e) => updateStep(idx, { notes: e.target.value })}
@@ -323,9 +347,9 @@ export default function RecipeCreator() {
         })}
 
         {submitError && <div style={{ color: "crimson" }}>{submitError}</div>}
-        <button type="submit" disabled={!isValid}>
-          Save recipe
-        </button>
+
+        {/* optional: keep enabled, let submit show errors */}
+        <button type="submit">Save recipe</button>
       </section>
     </form>
   );
