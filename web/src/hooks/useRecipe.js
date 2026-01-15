@@ -7,6 +7,17 @@ export const useRecipe = (id) => {
     queryKey: ["recipe", id],
     queryFn: () => recipeService.getRecipe(id),
     enabled: !!id,
+    initialData: () => {
+      if (!id) return undefined;
+      const cachedLists = queryClient.getQueriesData({ queryKey: ["recipes"] });
+      console.log("cachedLists:", cachedLists);
+      for (const [, data] of cachedLists) {
+        const found = data?.recipes?.find((r) => r._id === id);
+        if (found) return found;
+      }
+      return undefined;
+    },
+    staleTime: 30_000,
   });
 
   const createRecipeMutation = useMutation({

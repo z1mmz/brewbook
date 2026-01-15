@@ -6,7 +6,6 @@ const useRecipes = ({ page = 1, pageSize = 10 }) => {
   const recipesQuery = useQuery({
     queryKey: ["recipes", page, pageSize],
     queryFn: () => recipeService.getAll({ page, pageSize }),
-    // keepPreviousData: true,
   });
 
   return { data: recipesQuery.data ?? { metadata: {}, recipes: [] } };
