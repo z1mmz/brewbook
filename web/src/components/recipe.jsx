@@ -1,12 +1,15 @@
 import { useParams } from "react-router";
-import useRecipes from "../hooks/useRecipes";
+import useRecipe from "../hooks/useRecipe";
 import { Heading, VStack } from "@chakra-ui/react";
 import RecipeStep from "./recipeStep";
+
+import { QueryClient } from "@tanstack/react-query";
 function Recipe() {
+  // TODO: fetch recipe by id from useRecipe hook
+
   const { id } = useParams();
-  const { data } = useRecipes();
-  const { recipes } = data;
-  const recipe = recipes.find((r) => r._id === id) || {};
+  const { recipe } = useRecipe(id);
+
   console.log("Recipe in Recipe.jsx:", recipe);
 
   return (

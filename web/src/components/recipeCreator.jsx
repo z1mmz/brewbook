@@ -12,6 +12,8 @@ export default function RecipeCreator() {
   const [title, setTitle] = useState("");
   const [grind, setGrind] = useState("");
   const [water, setWater] = useState("");
+
+  const [type, setType] = useState("pour_over");
   const [description, setDescription] = useState("");
   const [dose, setDose] = useState("");
   const [steps, setSteps] = useState([emptyStep()]);
@@ -99,6 +101,7 @@ export default function RecipeCreator() {
       grind: grind.trim(),
       water: Number(water),
       dose: Number(dose),
+      type: type,
       description: description.trim(),
       steps: steps.map((s) => ({
         title: s.title.trim(),
