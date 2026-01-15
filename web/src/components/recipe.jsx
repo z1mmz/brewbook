@@ -4,8 +4,9 @@ import { Heading, VStack } from "@chakra-ui/react";
 import RecipeStep from "./recipeStep";
 function Recipe() {
   const { id } = useParams();
-  const { recipes } = useRecipes();
-  const recipe = recipes.find((r) => r.id === id) || {};
+  const { data } = useRecipes();
+  const { recipes } = data;
+  const recipe = recipes.find((r) => r._id === id) || {};
   console.log("Recipe in Recipe.jsx:", recipe);
 
   return (
@@ -14,7 +15,7 @@ function Recipe() {
         {recipe.title}
       </Heading>
       {recipe.description ? <p>{recipe.description}</p> : null}
-      <p>by: {recipe.user.username ? recipe.user.username : null}</p>
+      <p>by: {recipe.user ? recipe.user.username : null}</p>
       <p>Dose:{recipe.dose}</p>
       <p>Gind size:{recipe.grind}</p>
       <p>water:{recipe.water}</p>

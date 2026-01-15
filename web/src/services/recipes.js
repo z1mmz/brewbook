@@ -7,8 +7,9 @@ const setToken = (newToken) => {
   console.log(token);
 };
 
-const getAll = () => {
-  const request = axios.get(baseUrl);
+const getAll = (params = {}) => {
+  console.log("Fetching recipes with params:", params);
+  const request = axios.get(baseUrl, { params });
   return request.then((response) => response.data);
 };
 const getRecipe = (id) => {

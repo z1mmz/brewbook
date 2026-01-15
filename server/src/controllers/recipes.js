@@ -14,8 +14,34 @@ const getTokenFrom = (request) => {
 };
 
 recipeRouter.get("/", async (request, response) => {
-  const recipes = await Recipe.find({}).populate("user");
-  response.json(recipes);
+  let { page, pageSize } = request.query;
+  page = parseInt(page) || 1;
+  pageSize = Math.min(parseInt(pageSize) || 10, 100); // Limit pageSize to 100 max so stop abuse
+  try {
+    // Use aggregation to get paginated results along with total count
+    const recipes = await Recipe.aggregate([
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
+        },
+      },
+    ]);
+    await User.populate(recipes[0].data, { path: "user" }); // Populate user field
+
+    // Return paginated results with metadata
+    return response.status(200).json({
+      metadata: {
+        totalCount: recipes[0].metadata[0].total,
+        page,
+        pageSize,
+      },
+      recipes: recipes[0].data,
+    });
+  } catch (error) {
+    console.error("Error fetching recipes:", error);
+    return response.status(500).json({ error: "Internal server error" });
+  }
 });
 
 recipeRouter.get("/:id", async (request, response) => {
