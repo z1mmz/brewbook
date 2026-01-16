@@ -1,39 +1,55 @@
 import { useParams } from "react-router";
 import useRecipe from "../hooks/useRecipe";
-import { Heading, VStack } from "@chakra-ui/react";
+import { useRecipeRunner } from "../hooks/useRecipeRunner";
+import { RecipeRunnerContext } from "../contexts/RecipeRunnerContext";
+import { Heading, VStack, Button, HStack } from "@chakra-ui/react";
 import RecipeStep from "./recipeStep";
+import Runner from "./runner";
 
-import { QueryClient } from "@tanstack/react-query";
 function Recipe() {
-  // TODO: fetch recipe by id from useRecipe hook
-
   const { id } = useParams();
   const { recipe } = useRecipe(id);
-
-  console.log("Recipe in Recipe.jsx:", recipe);
+  const recipeRunner = useRecipeRunner(recipe);
 
   return (
-    <div>
-      <Heading mt={4} mb={4}>
-        {recipe.title}
-      </Heading>
-      {recipe.description ? <p>{recipe.description}</p> : null}
-      <p>by: {recipe.user ? recipe.user.username : null}</p>
-      <p>Dose:{recipe.dose}</p>
-      <p>Gind size:{recipe.grind}</p>
-      <p>water:{recipe.water}</p>
+    <RecipeRunnerContext.Provider value={recipeRunner}>
+      <div>
+        <Heading mt={4} mb={4}>
+          {recipe.title}
+        </Heading>
+        {recipe.description ? <p>{recipe.description}</p> : null}
+        <p>by: {recipe.user ? recipe.user.username : null}</p>
+        <p>Dose: {recipe.dose}</p>
+        <p>Grind size: {recipe.grind}</p>
+        <p>Water: {recipe.water}</p>
 
-      <Heading mt={4} mb={4}>
-        Steps:
-      </Heading>
-      <VStack spacing={4} align="stretch">
-        {recipe.steps
-          ? recipe.steps.map((step, index) => (
-              <RecipeStep key={index} step={step} index={index} />
-            ))
-          : null}
-      </VStack>
-    </div>
+        <HStack mt={4} mb={4}>
+          <Button
+            onClick={() => recipeRunner.setIsRunnerOpen(true)}
+            disabled={!recipe.steps || recipe.steps.length === 0}
+          >
+            Run Recipe
+          </Button>
+        </HStack>
+
+        <Heading mt={4} mb={4}>
+          Steps:
+        </Heading>
+        <VStack spacing={4} align="stretch">
+          {recipe.steps
+            ? recipe.steps.map((step, index) => (
+                <RecipeStep key={index} step={step} index={index} />
+              ))
+            : null}
+        </VStack>
+
+        <Runner
+          isOpen={recipeRunner.isRunnerOpen}
+          onClose={() => recipeRunner.setIsRunnerOpen(false)}
+          recipe={recipe}
+        />
+      </div>
+    </RecipeRunnerContext.Provider>
   );
 }
 

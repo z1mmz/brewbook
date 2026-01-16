@@ -1,30 +1,30 @@
 import { Card, Progress, Button, HStack } from "@chakra-ui/react";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useRecipeRunnerContext } from "../contexts/RecipeRunnerContext";
 
 function RecipeStep({ step, index }) {
-  const [timeRemaining, setTimeRemaining] = useState(step.timeSec || 0);
-  const [status, setStatus] = useState(null); // 'running', 'paused', 'completed', 'nu''
+  const { getStepTime, getStepStatus, startStep, pauseStep, resetStep } =
+    useRecipeRunnerContext();
+
+  const timeRemaining = getStepTime(index);
+  const status = getStepStatus(index);
 
   const handleStartStep = () => {
-    // Logic to start the step timer or any other action
-    setTimeRemaining(step.timeSec || 0);
-    console.log(`Starting step ${index + 1}: ${step.title}`);
-    setStatus("running");
+    if (status === "paused") {
+      startStep(index);
+    } else {
+      resetStep(index);
+      startStep(index);
+    }
   };
 
-  useEffect(() => {
-    let timer;
-    if (status === "running" && timeRemaining > 0) {
-      timer = setInterval(() => {
-        setTimeRemaining((prev) => prev - 1);
-      }, 1000);
-    } else if (timeRemaining === 0 && status === "running") {
-      setStatus("completed");
-      clearInterval(timer);
-    }
-    return () => clearInterval(timer);
-  }, [step.timeSec, status, timeRemaining]);
+  const handlePauseStep = () => {
+    pauseStep(index);
+  };
+
+  const progressPercent =
+    step.timeSec && timeRemaining > 0
+      ? ((step.timeSec - timeRemaining) / step.timeSec) * 100
+      : 0;
 
   return (
     <Card.Root key={index}>
@@ -35,22 +35,31 @@ function RecipeStep({ step, index }) {
         {step.timeSec ? <p>Time: {step.timeSec} seconds</p> : null}
 
         {step.timeSec ? (
-          <Progress.Root
-            maxW="20vw"
-            value={((step.timeSec - timeRemaining) / step.timeSec) * 100}
-            mt={2}
-          >
-            <HStack gap="5">
-              <Progress.Track flex="1">
-                <Progress.Range />
-              </Progress.Track>
-              <Progress.ValueText>{timeRemaining}s</Progress.ValueText>
+          <div>
+            <Progress.Root
+              maxW="20vw"
+              max={step.timeSec}
+              value={step.timeSec - timeRemaining}
+              mt={2}
+            >
+              <HStack gap="5">
+                <Progress.Track flex="1">
+                  <Progress.Range />
+                </Progress.Track>
+                <Progress.ValueText>{timeRemaining}s</Progress.ValueText>
+              </HStack>
+            </Progress.Root>
+            <HStack gap={2} mt={2}>
+              <Button onClick={handleStartStep} size="sm">
+                {status === "running" ? "Restart" : "Start"}
+              </Button>
+              {status === "running" && (
+                <Button onClick={handlePauseStep} size="sm" variant="outline">
+                  Pause
+                </Button>
+              )}
             </HStack>
-            <Button onClick={() => handleStartStep()} mt={2} size="sm">
-              {" "}
-              {status == null ? "Start Step" : "Restart"}
-            </Button>
-          </Progress.Root>
+          </div>
         ) : null}
       </Card.Body>
     </Card.Root>
