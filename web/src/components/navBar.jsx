@@ -13,13 +13,21 @@ export default function NavBar() {
     { to: "/create", label: "Create a recipe" },
   ];
 
-  const navLinks = navLinkData.map((link) => (
+  const authenticatedNavLinks = loggedInUser
+    ? [
+        { to: "/my-recipes", label: "My Recipes" },
+        { to: "/saved-recipes", label: "Saved Recipes" },
+        ...navLinkData,
+      ]
+    : navLinkData;
+
+  const navLinks = authenticatedNavLinks.map((link) => (
     <ChakraLink key={link.to} asChild>
       <Link to={link.to}>{link.label}</Link>
     </ChakraLink>
   ));
 
-  const navMenuItems = navLinkData.map((link) => (
+  const navMenuItems = authenticatedNavLinks.map((link) => (
     <Menu.Item key={link.to} value={link.to}>
       <Link to={link.to}>{link.label}</Link>
     </Menu.Item>

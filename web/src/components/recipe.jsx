@@ -5,6 +5,7 @@ import { RecipeRunnerContext } from "../contexts/RecipeRunnerContext";
 import { Heading, VStack, Button, HStack } from "@chakra-ui/react";
 import RecipeStep from "./recipeStep";
 import Runner from "./runner";
+import SaveButton from "./ui/saveButton";
 
 function Recipe() {
   const { id } = useParams();
@@ -30,6 +31,7 @@ function Recipe() {
           >
             Run Recipe
           </Button>
+          <SaveButton recipeId={id} variant="outline" />
         </HStack>
 
         <Heading mt={4} mb={4}>

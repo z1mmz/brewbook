@@ -21,6 +21,12 @@ const userSchema = new mongoose.Schema({
       ref: "Recipe",
     },
   ],
+  savedRecipes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Recipe",
+    },
+  ],
   reviews: [
     {
       type: mongoose.Schema.Types.ObjectId,

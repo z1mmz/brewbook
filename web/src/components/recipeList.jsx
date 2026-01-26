@@ -11,9 +11,14 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 import { useState } from "react";
-function RecipeList() {
+function RecipeList(user = null) {
   const [page, setPage] = useState(1);
   const pageSize = useBreakpointValue({ base: 2, sm: 2, md: 8 });
+  if (user) {
+    console.log("Fetching recipes for user:", user);
+  } else {
+    console.log("Fetching all recipes");
+  }
   const { data } = useRecipes({ page, pageSize });
   const { metadata, recipes } = data;
   console.log("RecipeList recipes:", recipes);

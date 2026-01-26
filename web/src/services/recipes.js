@@ -25,4 +25,36 @@ const createRecipe = async (recipe) => {
   return response.data;
 };
 
-export default { getAll, getRecipe, createRecipe, setToken };
+const getByUser = (userId, params = {}) => {
+  console.log("Fetching recipes for user:", userId);
+  const request = axios.get(`${baseUrl}/user/${userId}`, { params });
+  return request.then((response) => response.data);
+};
+
+const toggleSaveRecipe = async (recipeId) => {
+  console.log("Toggling save for recipe:", recipeId);
+  const config = {
+    headers: { Authorization: token },
+  };
+  const response = await axios.post(`${baseUrl}/${recipeId}/save`, {}, config);
+  return response.data;
+};
+
+const getSavedRecipes = (params = {}) => {
+  console.log("Fetching saved recipes with params:", params);
+  const config = {
+    headers: { Authorization: token },
+  };
+  const request = axios.get(`${baseUrl}/saved/all`, { params, ...config });
+  return request.then((response) => response.data);
+};
+
+export default {
+  getAll,
+  getRecipe,
+  createRecipe,
+  getByUser,
+  toggleSaveRecipe,
+  getSavedRecipes,
+  setToken,
+};
