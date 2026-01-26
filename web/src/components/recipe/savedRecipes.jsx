@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
-import useMyRecipes from "../hooks/useMyRecipes";
-import LoginContext from "../loginContext";
+import useSavedRecipes from "../../hooks/useSavedRecipes";
+import LoginContext from "../../contexts/loginContext";
 import {
   Card,
   Grid,
@@ -13,11 +13,11 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 
-function MyRecipes() {
+function SavedRecipes() {
   const [page, setPage] = useState(1);
   const { loggedInUser } = useContext(LoginContext);
   const pageSize = useBreakpointValue({ base: 2, sm: 2, md: 8 });
-  const { data } = useMyRecipes({ page, pageSize });
+  const { data } = useSavedRecipes({ page, pageSize });
   const { metadata, recipes } = data;
 
   const navigate = useNavigate();
@@ -25,8 +25,8 @@ function MyRecipes() {
   if (!loggedInUser) {
     return (
       <VStack spacing={4} align="center" mt={8}>
-        <Heading>My Recipes</Heading>
-        <Text>Please log in to view your recipes.</Text>
+        <Heading>Saved Recipes</Heading>
+        <Text>Please log in to view your saved recipes.</Text>
         <Button onClick={() => navigate("/login")} colorScheme="blue">
           Log In
         </Button>
@@ -44,14 +44,14 @@ function MyRecipes() {
   return (
     <VStack spacing={4} align="stretch">
       <Heading mt={4} mb={4}>
-        My Recipes
+        Saved Recipes
       </Heading>
 
       {recipes.length === 0 ? (
         <VStack spacing={4} align="center" mt={8}>
-          <Text>You haven't created any recipes yet.</Text>
-          <Button onClick={() => navigate("/create")} colorScheme="green">
-            Create Your First Recipe
+          <Text>You haven't saved any recipes yet.</Text>
+          <Button onClick={() => navigate("/recipes")} colorScheme="green">
+            Browse Recipes
           </Button>
         </VStack>
       ) : (
@@ -114,4 +114,4 @@ function MyRecipes() {
   );
 }
 
-export default MyRecipes;
+export default SavedRecipes;

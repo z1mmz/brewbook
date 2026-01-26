@@ -1,11 +1,11 @@
 import { useParams } from "react-router";
-import useRecipe from "../hooks/useRecipe";
-import { useRecipeRunner } from "../hooks/useRecipeRunner";
-import { RecipeRunnerContext } from "../contexts/RecipeRunnerContext";
+import useRecipe from "../../hooks/useRecipe";
+import { useRecipeRunner } from "../../hooks/useRecipeRunner";
+import { RecipeRunnerContext } from "../../contexts/RecipeRunnerContext";
 import { Heading, VStack, Button, HStack } from "@chakra-ui/react";
 import RecipeStep from "./recipeStep";
 import Runner from "./runner";
-import SaveButton from "./ui/saveButton";
+import SaveButton from "../ui/saveButton";
 
 function Recipe() {
   const { id } = useParams();

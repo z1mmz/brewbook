@@ -1,13 +1,13 @@
 import { Routes, Route, Link } from "react-router";
 import "./App.css";
-import Recipe from "./components/recipe";
-import RecipeList from "./components/recipeList";
-import RecipeCreator from "./components/recipeCreator";
-import MyRecipes from "./components/myRecipes";
-import SavedRecipes from "./components/savedRecipes";
-import LoginForm from "./components/loginForm";
-import SignupForm from "./components/signupForm";
-import NavBar from "./components/navBar";
+import Recipe from "./components/recipe/recipe";
+import RecipeList from "./components/recipe/recipeList";
+import RecipeCreator from "./components/recipe/recipeCreator";
+import MyRecipes from "./components/recipe/myRecipes";
+import SavedRecipes from "./components/recipe/savedRecipes";
+import LoginForm from "./components/auth/LoginForm";
+import SignupForm from "./components/auth/signupForm";
+import NavBar from "./components/ui/navBar";
 
 function App() {
   return (

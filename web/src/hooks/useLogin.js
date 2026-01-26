@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import recipeService from "../services/recipes";
 import loginService from "../services/login";
-import LoginContext from "../loginContext";
+import LoginContext from "../contexts/loginContext";
 import { useContext } from "react";
 
 export const useLogin = () => {

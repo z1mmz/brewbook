@@ -1,9 +1,9 @@
 import { Flex, Heading, Link as ChakraLink } from "@chakra-ui/react";
 import { Field, Input, Button } from "@chakra-ui/react";
-import { PasswordInput } from "./ui/password-input";
+import { PasswordInput } from "../ui/password-input";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { useUser } from "../hooks/userUsers";
+import { useUser } from "../../hooks/userUsers";
 
 function SignupForm() {
   const [username, setUsername] = useState("");

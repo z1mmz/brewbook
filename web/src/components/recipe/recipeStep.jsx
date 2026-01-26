@@ -1,5 +1,5 @@
 import { Card, Progress, Button, HStack } from "@chakra-ui/react";
-import { useRecipeRunnerContext } from "../contexts/RecipeRunnerContext";
+import { useRecipeRunnerContext } from "../../contexts/RecipeRunnerContext";
 
 function RecipeStep({ step, index }) {
   const { getStepTime, getStepStatus, startStep, pauseStep, resetStep } =

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import recipeService from "../services/recipes.js";
 import { useContext } from "react";
-import LoginContext from "../loginContext";
+import LoginContext from "../contexts/loginContext";
 
 const useSavedRecipes = ({ page = 1, pageSize = 10 } = {}) => {
   const { loggedInUser } = useContext(LoginContext);

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import useRecipe from "../hooks/useRecipe";
+import useRecipe from "../../hooks/useRecipe";
 
 const emptyStep = () => ({
   title: "",

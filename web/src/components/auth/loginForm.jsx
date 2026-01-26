@@ -1,4 +1,4 @@
-import { useLogin } from "../hooks/useLogin";
+import { useLogin } from "../../hooks/useLogin";
 import { useState } from "react";
 import {
   Field,
@@ -8,7 +8,7 @@ import {
   Heading,
   Link as ChakraLink,
 } from "@chakra-ui/react";
-import { PasswordInput, PasswordStrengthMeter } from "./ui/password-input";
+import { PasswordInput, PasswordStrengthMeter } from "../ui/password-input";
 import { Link, useNavigate } from "react-router";
 function LoginForm() {
   const { login } = useLogin();

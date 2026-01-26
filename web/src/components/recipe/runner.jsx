@@ -9,7 +9,7 @@ import {
   VStack,
   Text,
 } from "@chakra-ui/react";
-import { useRecipeRunnerContext } from "../contexts/RecipeRunnerContext";
+import { useRecipeRunnerContext } from "../../contexts/RecipeRunnerContext";
 import { use, useEffect } from "react";
 function Runner({ isOpen, onClose, recipe }) {
   const {

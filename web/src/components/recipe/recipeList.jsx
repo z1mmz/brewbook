@@ -1,4 +1,4 @@
-import useRecipes from "../hooks/useRecipes";
+import useRecipes from "../../hooks/useRecipes";
 import { Link } from "react-router";
 import {
   Card,

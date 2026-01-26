@@ -1,7 +1,7 @@
 import { HStack, IconButton, Menu, Link as ChakraLink } from "@chakra-ui/react";
 import { Link } from "react-router";
-import LoginContext from "../loginContext";
-import { useLogin } from "../hooks/useLogin";
+import LoginContext from "../../contexts/loginContext";
+import { useLogin } from "../../hooks/useLogin";
 import { useContext } from "react";
 import { Menu as MenuIcon } from "lucide-react";
 export default function NavBar() {

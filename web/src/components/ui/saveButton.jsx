@@ -2,7 +2,7 @@ import { Button } from "@chakra-ui/react";
 import { Heart } from "lucide-react";
 import useSaveRecipe from "../../hooks/useSaveRecipe";
 import { useContext, useEffect, useState } from "react";
-import LoginContext from "../../loginContext";
+import LoginContext from "../../contexts/loginContext";
 import recipeService from "../../services/recipes";
 
 function SaveButton({ recipeId, size = "md", variant = "solid" }) {
