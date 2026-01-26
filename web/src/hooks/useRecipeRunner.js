@@ -40,6 +40,10 @@ export function useRecipeRunner(recipe) {
                 ...prevStatus,
                 [index]: "completed",
               }));
+              if (index < steps.length) {
+                console.log(index, steps.length);
+                nextStep();
+              }
             }
             return updated;
           });
@@ -75,6 +79,7 @@ export function useRecipeRunner(recipe) {
     (stepIndex) => {
       if (stepIndex >= 0 && stepIndex < steps.length) {
         setCurrentStepIndex(stepIndex);
+        startStep(stepIndex);
       }
     },
     [steps.length]
@@ -91,6 +96,23 @@ export function useRecipeRunner(recipe) {
       goToStep(currentStepIndex - 1);
     }
   }, [currentStepIndex, goToStep]);
+
+  const start = useCallback(() => {
+    steps.forEach((_, index) => {
+      resetStep(index);
+    });
+    setIsRunnerOpen(true);
+    setCurrentStepIndex(0);
+    startStep(0);
+  }, [startStep]);
+
+  const close = useCallback(() => {
+    setIsRunnerOpen(false);
+    steps.forEach((_, index) => {
+      resetStep(index);
+    });
+    setCurrentStepIndex(0);
+  }, [resetStep]);
 
   const currentStep = steps[currentStepIndex];
   const isLastStep = currentStepIndex === steps.length - 1;
@@ -110,6 +132,8 @@ export function useRecipeRunner(recipe) {
     getStepStatus: (stepIndex) => stepStatus[stepIndex] || null,
 
     // Actions
+    start,
+    close,
     startStep,
     pauseStep,
     resetStep,

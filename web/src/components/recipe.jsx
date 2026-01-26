@@ -25,7 +25,7 @@ function Recipe() {
 
         <HStack mt={4} mb={4}>
           <Button
-            onClick={() => recipeRunner.setIsRunnerOpen(true)}
+            onClick={() => recipeRunner.start()}
             disabled={!recipe.steps || recipe.steps.length === 0}
           >
             Run Recipe
@@ -45,7 +45,7 @@ function Recipe() {
 
         <Runner
           isOpen={recipeRunner.isRunnerOpen}
-          onClose={() => recipeRunner.setIsRunnerOpen(false)}
+          onClose={() => recipeRunner.close()}
           recipe={recipe}
         />
       </div>
