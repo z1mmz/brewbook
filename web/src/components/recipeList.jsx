@@ -1,11 +1,19 @@
 import useRecipes from "../hooks/useRecipes";
 import { Link } from "react-router";
-import { Card, Grid, Button, HStack, VStack, Text } from "@chakra-ui/react";
+import {
+  Card,
+  Grid,
+  Button,
+  HStack,
+  VStack,
+  Text,
+  useBreakpointValue,
+} from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 import { useState } from "react";
 function RecipeList() {
   const [page, setPage] = useState(1);
-  const pageSize = 8;
+  const pageSize = useBreakpointValue({ base: 2, sm: 2, md: 8 });
   const { data } = useRecipes({ page, pageSize });
   const { metadata, recipes } = data;
   console.log("RecipeList recipes:", recipes);
@@ -38,8 +46,15 @@ function RecipeList() {
           Next
         </Button>
       </HStack>
-      <Grid mt={4} templateColumns="repeat(4, 1fr)" gap="6">
-        {" "}
+      <Grid
+        mt={4}
+        templateColumns={{
+          base: "1fr",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(4, 1fr)",
+        }}
+        gap="6"
+      >
         {recipes.map((recipe) => (
           <div key={recipe._id}>
             {" "}
