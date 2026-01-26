@@ -237,9 +237,6 @@ export default function RecipeCreator() {
           }}
         >
           <h3 style={{ margin: 0 }}>Steps</h3>
-          <button type="button" onClick={addStep}>
-            + Add step
-          </button>
         </div>
 
         {steps.map((step, idx) => {
@@ -293,7 +290,7 @@ export default function RecipeCreator() {
                   <textarea
                     value={step.notes}
                     onChange={(e) => updateStep(idx, { notes: e.target.value })}
-                    placeholder="Instructions for the user…"
+                    placeholder="Instructions for the brewer.."
                     style={{ width: "100%", minHeight: 70 }}
                   />
                 </label>
@@ -348,6 +345,9 @@ export default function RecipeCreator() {
             </div>
           );
         })}
+        <button type="button" onClick={addStep}>
+          + Add step
+        </button>
 
         {submitError && <div style={{ color: "crimson" }}>{submitError}</div>}
 
