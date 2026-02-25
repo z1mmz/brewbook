@@ -5,7 +5,7 @@ import RecipeList from "./components/recipe/recipeList";
 import RecipeCreator from "./components/recipe/recipeCreator";
 import MyRecipes from "./components/recipe/myRecipes";
 import SavedRecipes from "./components/recipe/savedRecipes";
-import LoginForm from "./components/auth/LoginForm";
+import LoginForm from "./components/auth/loginForm";
 import SignupForm from "./components/auth/signupForm";
 import NavBar from "./components/ui/navBar";
 
