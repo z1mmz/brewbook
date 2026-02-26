@@ -1,0 +1,13 @@
+{
+  "name": "brewbook",
+  "private": true,
+  "workspaces": [
+    "web",
+    "server"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=web",
+    "start": "npm run start --workspace=server",
+    "install:all": "npm install"
+  }
+}
