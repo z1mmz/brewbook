@@ -14,18 +14,22 @@ app.use(express.json());
 app.use(middleware.requestLogger);
 app.use(middleware.tokenExtractor);
 
-app.get('/health', (req, res) => {
+app.get("/health", (req, res) => {
   if (db.isDBConnectedisDBConnected) {
-    res.status(200).json({ status: 'healthy', db: 'connected' })
+    res.status(200).json({ status: "healthy", db: "connected" });
   } else {
-    res.status(503).json({ status: 'degraded', db: 'connecting' })
+    res.status(503).json({ status: "degraded", db: "connecting" });
   }
-})
+});
 
 app.use("/api/recipes", recipesRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/login", loginRouter);
+
+app.get("*", (request, response) => {
+  response.sendFile(path.join(staticPath, "index.html"));
+});
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
 module.exports = app;
