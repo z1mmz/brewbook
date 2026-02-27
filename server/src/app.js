@@ -13,6 +13,15 @@ app.use(express.static(path.join(__dirname, "dist")));
 app.use(express.json());
 app.use(middleware.requestLogger);
 app.use(middleware.tokenExtractor);
+
+app.get('/health', (req, res) => {
+  if (db.isDBConnectedisDBConnected) {
+    res.status(200).json({ status: 'healthy', db: 'connected' })
+  } else {
+    res.status(503).json({ status: 'degraded', db: 'connecting' })
+  }
+})
+
 app.use("/api/recipes", recipesRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/reviews", reviewsRouter);
