@@ -27,9 +27,10 @@ app.use("/api/users", usersRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/login", loginRouter);
 
-app.get("*", (request, response) => {
-  response.sendFile(path.join(staticPath, "index.html"));
+app.get("/{*any}", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
+
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
 module.exports = app;
