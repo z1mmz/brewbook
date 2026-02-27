@@ -44,6 +44,15 @@ recipeRouter.get("/", async (request, response) => {
   }
 });
 
+recipeRouter.get("/recent", async (request, response) => {
+  try {
+    const recipes = await Recipe.find({}).sort({ createdAt: -1 }).limit(5);
+    response.json(recipes);
+  } catch (error) {
+    console.error("Error fetching recent recipes:", error);
+    response.status(500).json({ error: "Internal server error" });
+  }
+});
 recipeRouter.get("/:id", async (request, response) => {
   const id = request.params.id;
   const recipe = await Recipe.findById(id);
@@ -120,7 +129,7 @@ recipeRouter.delete(
         error: "unauthorized",
       });
     }
-  }
+  },
 );
 
 recipeRouter.post(
@@ -148,7 +157,7 @@ recipeRouter.post(
       if (isSaved) {
         // Remove from saved
         user.savedRecipes = user.savedRecipes.filter(
-          (id) => id.toString() !== recipeId
+          (id) => id.toString() !== recipeId,
         );
       } else {
         // Add to saved
@@ -161,7 +170,7 @@ recipeRouter.post(
       console.error("Error saving recipe:", error);
       response.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 
 recipeRouter.get(
@@ -187,7 +196,7 @@ recipeRouter.get(
           $match: {
             _id: {
               $in: user.savedRecipes.map(
-                (id) => new mongoose.Types.ObjectId(id)
+                (id) => new mongoose.Types.ObjectId(id),
               ),
             },
           },
@@ -214,6 +223,6 @@ recipeRouter.get(
       console.error("Error fetching saved recipes:", error);
       return response.status(500).json({ error: "Internal server error" });
     }
-  }
+  },
 );
 module.exports = recipeRouter;

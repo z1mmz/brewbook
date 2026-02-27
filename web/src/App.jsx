@@ -1,5 +1,7 @@
 import { Routes, Route, Link } from "react-router";
+import { Container } from "@chakra-ui/react";
 import "./App.css";
+import Welcome from "./components/welcome/welcome";
 import Recipe from "./components/recipe/recipe";
 import RecipeList from "./components/recipe/recipeList";
 import RecipeCreator from "./components/recipe/recipeCreator";
@@ -11,11 +13,11 @@ import NavBar from "./components/ui/navBar";
 
 function App() {
   return (
-    <div>
+    <Container maxW="container.xl">
       <NavBar />
       <div>
         <Routes>
-          <Route path="/" element={<h2>Welcome to brewbook</h2>} />
+          <Route path="/" element={<Welcome />} />
           <Route path="/recipes" element={<RecipeList />} />
           <Route path="/recipes/:id" element={<Recipe />} />
           <Route path="/my-recipes" element={<MyRecipes />} />
@@ -27,7 +29,7 @@ function App() {
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </div>
-    </div>
+    </Container>
   );
 }
 
