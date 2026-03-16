@@ -26,7 +26,7 @@ const recipeSchema = new mongoose.Schema({
     required: true,
   },
   steps: {
-    type: JSON,
+    type: mongoose.Schema.Types.Mixed,
     required: true,
   },
   reviews: {

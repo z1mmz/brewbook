@@ -121,7 +121,7 @@ recipeRouter.delete(
         .status(400)
         .json({ error: "UserId missing or not valid" });
     }
-    if (blog.user.id === user.id) {
+    if (recipe.user.id === user.id) {
       await Recipe.findByIdAndDelete(id);
       response.status(204).end();
     } else {

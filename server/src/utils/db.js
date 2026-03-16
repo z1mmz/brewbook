@@ -22,4 +22,4 @@ const connectDB = async (attempt = 1, maxDelay = 60000) => {
 
 connectDB()
 
-module.exports = { isDBConnected }
+module.exports = { get isDBConnected() { return isDBConnected } }
