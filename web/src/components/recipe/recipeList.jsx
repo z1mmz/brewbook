@@ -1,5 +1,4 @@
 import useRecipes from "../../hooks/useRecipes";
-import { Link } from "react-router";
 import {
   Card,
   Grid,
@@ -7,22 +6,29 @@ import {
   HStack,
   VStack,
   Text,
+  Input,
   useBreakpointValue,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
-import { useState } from "react";
-function RecipeList(user = null) {
+import { useState, useEffect } from "react";
+
+function RecipeList() {
   const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
   const pageSize = useBreakpointValue({ base: 2, sm: 2, md: 8 });
-  if (user) {
-    console.log("Fetching recipes for user:", user);
-  } else {
-    console.log("Fetching all recipes");
-  }
-  const { data } = useRecipes({ page, pageSize });
+
+  // Debounce: wait 400ms after the user stops typing before querying
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const { data } = useRecipes({ page, pageSize, search });
   const { metadata, recipes } = data;
-  console.log("RecipeList recipes:", recipes);
-  console.log("RecipeList metadata:", metadata);
 
   const totalPages = Math.max(
     1,
@@ -30,12 +36,18 @@ function RecipeList(user = null) {
   );
   const hasPrev = page > 1;
   const hasNext = page < totalPages;
-  console.log("hasPrev:", hasPrev, "hasNext:", hasNext);
 
   const navigate = useNavigate();
   return (
     <VStack spacing={4} align="stretch">
-      <HStack justify="space-between" mt={4}>
+      <Input
+        mt={4}
+        placeholder="Search recipes by title, description, grind, type…"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+      />
+
+      <HStack justify="space-between">
         <Button
           onClick={() => setPage((p) => Math.max(1, p - 1))}
           disabled={!hasPrev}
@@ -44,49 +56,57 @@ function RecipeList(user = null) {
         </Button>
 
         <Text>
-          Page {page} of {totalPages}
+          {search
+            ? `${metadata.totalCount ?? 0} result${metadata.totalCount === 1 ? "" : "s"}`
+            : `Page ${page} of ${totalPages}`}
         </Text>
 
         <Button onClick={() => setPage((p) => p + 1)} disabled={!hasNext}>
           Next
         </Button>
       </HStack>
-      <Grid
-        mt={4}
-        templateColumns={{
-          base: "1fr",
-          sm: "repeat(2, 1fr)",
-          md: "repeat(4, 1fr)",
-        }}
-        gap="6"
-      >
-        {recipes.map((recipe) => (
-          <div key={recipe._id}>
-            {" "}
-            <Card.Root
-              onClick={() => navigate(`/recipes/${recipe._id}`)}
-              bg={{ _hover: "tan" }}
-            >
-              <Card.Header>
-                <b>{recipe.title}</b>
-              </Card.Header>
-              <Card.Body>
-                <p>Dose: {recipe.dose}g</p>
-                <p>Grind: {recipe.grind}</p>
-                <p>Water: {recipe.water}ml</p>
-              </Card.Body>
-              <Card.Footer justifyContent="flex-end">
-                <Button
-                  onClick={() => navigate(`/recipes/${recipe._id}`)}
-                  variant="outline"
-                >
-                  View
-                </Button>
-              </Card.Footer>
-            </Card.Root>
-          </div>
-        ))}
-      </Grid>
+
+      {recipes.length === 0 && search ? (
+        <Text color="gray.500" textAlign="center" mt={8}>
+          No recipes found for &ldquo;{search}&rdquo;
+        </Text>
+      ) : (
+        <Grid
+          mt={4}
+          templateColumns={{
+            base: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(4, 1fr)",
+          }}
+          gap="6"
+        >
+          {recipes.map((recipe) => (
+            <div key={recipe._id}>
+              <Card.Root
+                onClick={() => navigate(`/recipes/${recipe._id}`)}
+                bg={{ _hover: "tan" }}
+              >
+                <Card.Header>
+                  <b>{recipe.title}</b>
+                </Card.Header>
+                <Card.Body>
+                  <p>Dose: {recipe.dose}g</p>
+                  <p>Grind: {recipe.grind}</p>
+                  <p>Water: {recipe.water}ml</p>
+                </Card.Body>
+                <Card.Footer justifyContent="flex-end">
+                  <Button
+                    onClick={() => navigate(`/recipes/${recipe._id}`)}
+                    variant="outline"
+                  >
+                    View
+                  </Button>
+                </Card.Footer>
+              </Card.Root>
+            </div>
+          ))}
+        </Grid>
+      )}
     </VStack>
   );
 }

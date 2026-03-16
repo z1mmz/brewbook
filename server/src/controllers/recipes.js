@@ -14,25 +14,30 @@ const getTokenFrom = (request) => {
 };
 
 recipeRouter.get("/", async (request, response) => {
-  let { page, pageSize } = request.query;
+  let { page, pageSize, search } = request.query;
   page = parseInt(page) || 1;
-  pageSize = Math.min(parseInt(pageSize) || 10, 100); // Limit pageSize to 100 max so stop abuse
+  pageSize = Math.min(parseInt(pageSize) || 10, 100);
   try {
-    // Use aggregation to get paginated results along with total count
-    const recipes = await Recipe.aggregate([
-      {
-        $facet: {
-          metadata: [{ $count: "total" }],
-          data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
-        },
-      },
-    ]);
-    await User.populate(recipes[0].data, { path: "user" }); // Populate user field
+    const pipeline = [];
 
-    // Return paginated results with metadata
+    if (search && search.trim()) {
+      pipeline.push({ $match: { $text: { $search: search.trim() } } });
+      pipeline.push({ $sort: { score: { $meta: "textScore" }, createdAt: -1 } });
+    }
+
+    pipeline.push({
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
+      },
+    });
+
+    const recipes = await Recipe.aggregate(pipeline);
+    await User.populate(recipes[0].data, { path: "user" });
+
     return response.status(200).json({
       metadata: {
-        totalCount: recipes[0].metadata[0].total,
+        totalCount: recipes[0].metadata[0]?.total ?? 0,
         page,
         pageSize,
       },

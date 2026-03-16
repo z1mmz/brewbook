@@ -40,6 +40,9 @@ const recipeSchema = new mongoose.Schema({
     ref: "User",
   },
 }, { timestamps: true });
+
+recipeSchema.index({ title: "text", description: "text", type: "text", grind: "text" });
+
 recipeSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
