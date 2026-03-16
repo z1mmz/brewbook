@@ -42,6 +42,9 @@ const deleteRecipe = async (id) => {
   await axios.delete(`${baseUrl}/${id}`, config);
 };
 
+const getRecent = () =>
+  axios.get(`${baseUrl}/recent`).then((r) => r.data);
+
 const toggleSaveRecipe = async (recipeId) => {
   console.log("Toggling save for recipe:", recipeId);
   const config = {
@@ -62,6 +65,7 @@ const getSavedRecipes = (params = {}) => {
 
 export default {
   getAll,
+  getRecent,
   getRecipe,
   createRecipe,
   updateRecipe,

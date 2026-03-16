@@ -1,50 +1,235 @@
-import React, { useState, useEffect } from "react";
+import { useContext } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { Link as ChakraLink } from "@chakra-ui/react";
+import { useNavigate } from "react-router";
+import {
+  Box,
+  Button,
+  Card,
+  Grid,
+  Heading,
+  HStack,
+  SimpleGrid,
+  Text,
+  VStack,
+  Link as ChakraLink,
+} from "@chakra-ui/react";
+import { Coffee, BookOpen, Users } from "lucide-react";
+import recipeService from "../../services/recipes";
+import LoginContext from "../../contexts/loginContext";
+
+function FeatureCard({ icon, title, description }) {
+  const FeatureIcon = icon;
+  return (
+    <VStack gap={3} p={6} borderWidth="1px" borderRadius="xl" align="start">
+      <Box color="orange.500">
+        <FeatureIcon size={28} />
+      </Box>
+      <Heading size="md">{title}</Heading>
+      <Text opacity={0.7}>{description}</Text>
+    </VStack>
+  );
+}
+
+function RecipeCard({ recipe }) {
+  const navigate = useNavigate();
+  return (
+    <Card.Root
+      onClick={() => navigate(`/recipes/${recipe.id}`)}
+      cursor="pointer"
+      _hover={{ shadow: "md", transform: "translateY(-2px)" }}
+      transition="all 0.15s"
+    >
+      <Card.Header pb={1}>
+        <Text fontWeight="bold" lineClamp={1}>{recipe.title}</Text>
+        <Text fontSize="sm" opacity={0.6}>
+          by {recipe.user?.username ?? "Unknown"}
+        </Text>
+      </Card.Header>
+      <Card.Body pt={0}>
+        <HStack gap={4} fontSize="sm" opacity={0.8}>
+          <Text>☕ {recipe.dose}g</Text>
+          <Text>💧 {recipe.water}ml</Text>
+          <Text>⚙️ {recipe.grind}</Text>
+        </HStack>
+        {recipe.description && (
+          <Text fontSize="sm" mt={2} opacity={0.7} lineClamp={2}>
+            {recipe.description}
+          </Text>
+        )}
+      </Card.Body>
+    </Card.Root>
+  );
+}
+
 export default function Welcome() {
-  const [recentRecipes, setRecentRecipes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { loggedInUser } = useContext(LoginContext);
 
-  const fetchRecentRecipes = async () => {
-    try {
-      const response = await fetch("/api/recipes/recent");
-      const data = await response.json();
-      setRecentRecipes(data);
-    } catch (error) {
-      console.error("Error fetching recent recipes:", error);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchRecentRecipes();
-  }, []);
+  const { data: recentRecipes = [], isLoading } = useQuery({
+    queryKey: ["recentRecipes"],
+    queryFn: recipeService.getRecent,
+    staleTime: 60_000,
+  });
 
   return (
-    <div className="welcome-container">
-      <h1>Welcome to BrewBook</h1>
-      <p>Discover and share your favorite recipes</p>
+    <VStack gap={0} align="stretch">
 
-      <section className="top-recipes">
-        <h2>Recently created recipes</h2>
-        {loading ? (
-          <p>Loading recipes...</p>
+      {/* Hero */}
+      <Box
+        bg="orange.900"
+        color="white"
+        borderRadius="2xl"
+        mt={6}
+        px={{ base: 6, md: 16 }}
+        py={{ base: 12, md: 20 }}
+        textAlign="center"
+      >
+        <Text
+          fontSize="sm"
+          fontWeight="semibold"
+          letterSpacing="widest"
+          opacity={0.7}
+          textTransform="uppercase"
+          mb={3}
+        >
+          The coffee brewer's companion
+        </Text>
+        <Heading
+          size={{ base: "3xl", md: "5xl" }}
+          fontWeight="extrabold"
+          lineHeight="tight"
+          mb={4}
+        >
+          Your recipes.<br />Your community.
+        </Heading>
+        <Text
+          fontSize={{ base: "md", md: "xl" }}
+          opacity={0.8}
+          maxW="520px"
+          mx="auto"
+          mb={8}
+        >
+          Discover hand-crafted brewing recipes, fine-tune your technique,
+          and share what works with coffee lovers around the world.
+        </Text>
+
+        <HStack gap={3} justify="center" flexWrap="wrap">
+          <Button asChild size="lg" colorPalette="orange">
+            <Link to="/recipes">Browse Recipes</Link>
+          </Button>
+          {loggedInUser ? (
+            <Button asChild size="lg" variant="outline">
+              <Link to="/create">Share a Recipe</Link>
+            </Button>
+          ) : (
+            <Button asChild size="lg" variant="outline">
+              <Link to="/signup">Join for Free</Link>
+            </Button>
+          )}
+        </HStack>
+      </Box>
+
+      {/* Features */}
+      <SimpleGrid columns={{ base: 1, md: 3 }} gap={5} mt={12}>
+        <FeatureCard
+          icon={Coffee}
+          title="Discover great brews"
+          description="Browse a growing library of recipes for pour-over, espresso, AeroPress, and more — each with exact ratios and step-by-step guides."
+        />
+        <FeatureCard
+          icon={BookOpen}
+          title="Run your recipe"
+          description="Follow along with the built-in step runner and timers so your hands stay free and your brew stays on track."
+        />
+        <FeatureCard
+          icon={Users}
+          title="Share with the community"
+          description="Publish your favourite recipe, read reviews from other brewers, and help everyone make a better cup."
+        />
+      </SimpleGrid>
+
+      {/* Recent recipes */}
+      <Box mt={14}>
+        <HStack justify="space-between" mb={5} align="baseline">
+          <Heading size="xl">Recently added</Heading>
+          <ChakraLink asChild fontSize="sm" opacity={0.7}>
+            <Link to="/recipes">View all →</Link>
+          </ChakraLink>
+        </HStack>
+
+        {isLoading ? (
+          <Text opacity={0.5}>Loading recipes…</Text>
+        ) : recentRecipes.length === 0 ? (
+          <Text opacity={0.5}>No recipes yet — be the first to add one!</Text>
         ) : (
-          <div className="recipes-grid">
+          <Grid
+            templateColumns={{
+              base: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+            }}
+            gap={5}
+          >
             {recentRecipes.map((recipe) => (
-              <div key={recipe.id} className="recipe-card">
-                <h3>
-                  <ChakraLink asChild variant={"underline"} fontWeight="normal">
-                    <Link to={`/recipes/${recipe.id}`}>
-                      {recipe.title} by {recipe.user?.name || "Unknown User"}
-                    </Link>
-                  </ChakraLink>
-                </h3>
-              </div>
+              <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
-          </div>
+          </Grid>
         )}
-      </section>
-    </div>
+      </Box>
+
+      {/* CTA — logged-out */}
+      {!loggedInUser && (
+        <Box
+          mt={16}
+          mb={8}
+          p={{ base: 8, md: 14 }}
+          bg="orange.50"
+          _dark={{ bg: "orange.950" }}
+          borderRadius="2xl"
+          textAlign="center"
+        >
+          <Heading size="2xl" mb={3}>Ready to share your recipe?</Heading>
+          <Text opacity={0.7} mb={7} maxW="460px" mx="auto">
+            Join thousands of brewers who use BrewBook to document, refine,
+            and share their craft.
+          </Text>
+          <HStack gap={3} justify="center" flexWrap="wrap">
+            <Button asChild size="lg" colorPalette="orange">
+              <Link to="/signup">Create a free account</Link>
+            </Button>
+            <Button asChild size="lg" variant="ghost">
+              <Link to="/login">Sign in</Link>
+            </Button>
+          </HStack>
+        </Box>
+      )}
+
+      {/* CTA — logged-in */}
+      {loggedInUser && (
+        <Box
+          mt={16}
+          mb={8}
+          p={{ base: 8, md: 14 }}
+          bg="orange.50"
+          _dark={{ bg: "orange.950" }}
+          borderRadius="2xl"
+          textAlign="center"
+        >
+          <Heading size="2xl" mb={3}>What are you brewing today?</Heading>
+          <Text opacity={0.7} mb={7} maxW="460px" mx="auto">
+            Document a new recipe or jump back into one of yours.
+          </Text>
+          <HStack gap={3} justify="center" flexWrap="wrap">
+            <Button asChild size="lg" colorPalette="orange">
+              <Link to="/create">Add a recipe</Link>
+            </Button>
+            <Button asChild size="lg" variant="ghost">
+              <Link to="/my-recipes">My recipes</Link>
+            </Button>
+          </HStack>
+        </Box>
+      )}
+
+    </VStack>
   );
 }

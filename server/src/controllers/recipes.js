@@ -51,7 +51,10 @@ recipeRouter.get("/", async (request, response) => {
 
 recipeRouter.get("/recent", async (request, response) => {
   try {
-    const recipes = await Recipe.find({}).sort({ createdAt: -1 }).limit(5);
+    const recipes = await Recipe.find({})
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .populate("user", "username");
     response.json(recipes);
   } catch (error) {
     console.error("Error fetching recent recipes:", error);
