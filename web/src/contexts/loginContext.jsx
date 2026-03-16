@@ -1,5 +1,6 @@
 import { createContext, useReducer } from "react";
 import recipeService from "../services/recipes";
+import reviewsService from "../services/reviews";
 
 const loginReducer = (state, action) => {
   switch (action.type) {
@@ -19,6 +20,7 @@ const initUser = () => {
   if (loggedUserJSON) {
     const user = JSON.parse(loggedUserJSON);
     recipeService.setToken(user.token);
+    reviewsService.setToken(user.token);
     return user;
   }
   return null;

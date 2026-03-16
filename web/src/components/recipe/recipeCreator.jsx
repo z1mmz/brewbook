@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router";
 import useRecipe from "../../hooks/useRecipe";
 
 const emptyStep = () => ({
@@ -8,21 +9,43 @@ const emptyStep = () => ({
   waterMl: "",
 });
 
+const stepToForm = (s) => ({
+  title: s.title ?? "",
+  notes: s.notes ?? "",
+  timeSec: s.timeSec !== undefined ? String(s.timeSec) : "",
+  waterMl: s.waterMl !== undefined ? String(s.waterMl) : "",
+});
+
 export default function RecipeCreator() {
+  const { id } = useParams();
+  const isEditMode = !!id;
+
+  const { recipe, createRecipe, updateRecipe } = useRecipe(id);
+
   const [title, setTitle] = useState("");
   const [grind, setGrind] = useState("");
   const [water, setWater] = useState("");
-
   const [type, setType] = useState("pour_over");
   const [description, setDescription] = useState("");
   const [dose, setDose] = useState("");
   const [steps, setSteps] = useState([emptyStep()]);
   const [submitError, setSubmitError] = useState(null);
-
-  // ✅ new flag
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const { createRecipe } = useRecipe();
+  // Pre-populate fields when editing
+  useEffect(() => {
+    if (isEditMode && recipe && recipe.title) {
+      setTitle(recipe.title ?? "");
+      setGrind(recipe.grind ?? "");
+      setWater(recipe.water !== undefined ? String(recipe.water) : "");
+      setType(recipe.type ?? "pour_over");
+      setDescription(recipe.description ?? "");
+      setDose(recipe.dose !== undefined ? String(recipe.dose) : "");
+      if (Array.isArray(recipe.steps) && recipe.steps.length > 0) {
+        setSteps(recipe.steps.map(stepToForm));
+      }
+    }
+  }, [isEditMode, recipe]);
 
   const errors = useMemo(() => {
     const e = {};
@@ -65,10 +88,7 @@ export default function RecipeCreator() {
   }, [title, grind, water, dose, steps]);
 
   const isValid = Object.keys(errors).length === 0;
-
-  // only show errors after submit attempt
-  const showErrors = hasSubmitted;
-  const shownErrors = showErrors ? errors : {};
+  const shownErrors = hasSubmitted ? errors : {};
 
   function updateStep(index, patch) {
     setSteps((prev) =>
@@ -96,7 +116,7 @@ export default function RecipeCreator() {
       return;
     }
 
-    const recipe = {
+    const recipeData = {
       title: title.trim(),
       grind: grind.trim(),
       water: Number(water),
@@ -111,7 +131,11 @@ export default function RecipeCreator() {
       })),
     };
 
-    createRecipe(recipe);
+    if (isEditMode) {
+      updateRecipe(id, recipeData);
+    } else {
+      createRecipe(recipeData);
+    }
   }
 
   const stepWaterSum = useMemo(() => {
@@ -126,7 +150,7 @@ export default function RecipeCreator() {
       onSubmit={handleSubmit}
       style={{ maxWidth: 840, display: "grid", gap: 16 }}
     >
-      <h2>Create a coffee recipe</h2>
+      <h2>{isEditMode ? "Edit recipe" : "Create a coffee recipe"}</h2>
 
       <section
         style={{
@@ -351,8 +375,7 @@ export default function RecipeCreator() {
 
         {submitError && <div style={{ color: "crimson" }}>{submitError}</div>}
 
-        {/* optional: keep enabled, let submit show errors */}
-        <button type="submit">Save recipe</button>
+        <button type="submit">{isEditMode ? "Save changes" : "Save recipe"}</button>
       </section>
     </form>
   );

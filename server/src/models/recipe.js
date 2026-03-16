@@ -29,15 +29,17 @@ const recipeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     required: true,
   },
-  reviews: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Review",
-  },
+  reviews: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
+    },
+  ],
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
-});
+}, { timestamps: true });
 recipeSchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();

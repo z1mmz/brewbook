@@ -1,6 +1,8 @@
 import { useState, useContext } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useMyRecipes from "../../hooks/useMyRecipes";
 import LoginContext from "../../contexts/loginContext";
+import recipeService from "../../services/recipes";
 import {
   Card,
   Grid,
@@ -19,8 +21,16 @@ function MyRecipes() {
   const pageSize = useBreakpointValue({ base: 2, sm: 2, md: 8 });
   const { data } = useMyRecipes({ page, pageSize });
   const { metadata, recipes } = data;
-
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => recipeService.deleteRecipe(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["myRecipes"] });
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+    },
+  });
 
   if (!loggedInUser) {
     return (
@@ -97,12 +107,32 @@ function MyRecipes() {
                     <p>Water: {recipe.water}ml</p>
                   </Card.Body>
                   <Card.Footer justifyContent="flex-end">
-                    <Button
-                      onClick={() => navigate(`/recipes/${recipe._id}`)}
-                      variant="outline"
-                    >
-                      View
-                    </Button>
+                    <HStack>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/recipes/${recipe._id}/edit`);
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm("Delete this recipe?")) {
+                            deleteMutation.mutate(recipe._id);
+                          }
+                        }}
+                        colorScheme="red"
+                        variant="outline"
+                        size="sm"
+                        loading={deleteMutation.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </HStack>
                   </Card.Footer>
                 </Card.Root>
               </div>

@@ -121,13 +121,48 @@ recipeRouter.delete(
         .status(400)
         .json({ error: "UserId missing or not valid" });
     }
+    if (!recipe) {
+      return response.status(404).json({ error: "Recipe not found" });
+    }
     if (recipe.user.id === user.id) {
       await Recipe.findByIdAndDelete(id);
+      await User.findByIdAndUpdate(user.id, { $pull: { recipes: recipe._id } });
       response.status(204).end();
     } else {
       response.status(401).json({
         error: "unauthorized",
       });
+    }
+  },
+);
+
+recipeRouter.put(
+  "/:id",
+  middleware.userExtractor,
+  async (request, response) => {
+    const id = request.params.id;
+    const user = request.user;
+    if (!user) {
+      return response.status(400).json({ error: "UserId missing or not valid" });
+    }
+    try {
+      const recipe = await Recipe.findById(id).populate("user");
+      if (!recipe) {
+        return response.status(404).json({ error: "Recipe not found" });
+      }
+      if (recipe.user.id !== user.id) {
+        return response.status(401).json({ error: "unauthorized" });
+      }
+      const { title, type, description, dose, grind, water, steps } = request.body;
+      const updated = await Recipe.findByIdAndUpdate(
+        id,
+        { title, type, description, dose, grind, water, steps },
+        { new: true, runValidators: true }
+      );
+      response.status(200).json(updated);
+    } catch (error) {
+      console.error("Error updating recipe:", error);
+      response.status(500).json({ error: "Internal server error" });
     }
   },
 );

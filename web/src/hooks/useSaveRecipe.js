@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import recipeService from "../services/recipes.js";
+import { toaster } from "../components/ui/toaster";
 
 const useSaveRecipe = () => {
   const queryClient = useQueryClient();
@@ -7,9 +8,14 @@ const useSaveRecipe = () => {
   const saveRecipeMutation = useMutation({
     mutationFn: (recipeId) => recipeService.toggleSaveRecipe(recipeId),
     onSuccess: () => {
-      // Invalidate both saved recipes and user data to refresh
       queryClient.invalidateQueries({ queryKey: ["savedRecipes"] });
-      queryClient.invalidateQueries({ queryKey: ["user"] });
+    },
+    onError: () => {
+      toaster.create({
+        type: "error",
+        title: "Failed to save recipe",
+        description: "Please try again",
+      });
     },
   });
 

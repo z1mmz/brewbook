@@ -6,6 +6,8 @@ import { Heading, VStack, Button, HStack } from "@chakra-ui/react";
 import RecipeStep from "./recipeStep";
 import Runner from "./runner";
 import SaveButton from "../ui/saveButton";
+import ReviewList from "../review/reviewList";
+import ReviewForm from "../review/reviewForm";
 
 function Recipe() {
   const { id } = useParams();
@@ -50,6 +52,10 @@ function Recipe() {
           onClose={() => recipeRunner.close()}
           recipe={recipe}
         />
+
+        <Heading mt={6} mb={3} size="md">Reviews</Heading>
+        <ReviewList recipeId={id} />
+        <ReviewForm recipeId={id} />
       </div>
     </RecipeRunnerContext.Provider>
   );

@@ -31,6 +31,17 @@ const getByUser = (userId, params = {}) => {
   return request.then((response) => response.data);
 };
 
+const updateRecipe = async (id, recipe) => {
+  const config = { headers: { Authorization: token } };
+  const response = await axios.put(`${baseUrl}/${id}`, recipe, config);
+  return response.data;
+};
+
+const deleteRecipe = async (id) => {
+  const config = { headers: { Authorization: token } };
+  await axios.delete(`${baseUrl}/${id}`, config);
+};
+
 const toggleSaveRecipe = async (recipeId) => {
   console.log("Toggling save for recipe:", recipeId);
   const config = {
@@ -53,6 +64,8 @@ export default {
   getAll,
   getRecipe,
   createRecipe,
+  updateRecipe,
+  deleteRecipe,
   getByUser,
   toggleSaveRecipe,
   getSavedRecipes,
