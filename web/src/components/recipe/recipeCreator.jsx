@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import useRecipe from "../../hooks/useRecipe";
+import useBeans from "../../hooks/useBeans";
+import LoginContext from "../../contexts/loginContext";
 
 const emptyStep = () => ({
   title: "",
@@ -21,9 +23,12 @@ export default function RecipeCreator() {
   const isEditMode = !!id;
 
   const { recipe, createRecipe, updateRecipe } = useRecipe(id);
+  const { loggedInUser } = useContext(LoginContext);
+  const { beans } = useBeans();
 
   const [title, setTitle] = useState("");
   const [grind, setGrind] = useState("");
+  const [beanId, setBeanId] = useState("");
   const [water, setWater] = useState("");
   const [type, setType] = useState("pour_over");
   const [description, setDescription] = useState("");
@@ -44,6 +49,7 @@ export default function RecipeCreator() {
       if (Array.isArray(recipe.steps) && recipe.steps.length > 0) {
         setSteps(recipe.steps.map(stepToForm));
       }
+      setBeanId(recipe.bean?.id ?? "");
     }
   }, [isEditMode, recipe]);
 
@@ -129,6 +135,7 @@ export default function RecipeCreator() {
         ...(s.timeSec === "" ? {} : { timeSec: Number(s.timeSec) }),
         ...(s.waterMl === "" ? {} : { waterMl: Number(s.waterMl) }),
       })),
+      bean: beanId || null,
     };
 
     if (isEditMode) {
@@ -250,6 +257,26 @@ export default function RecipeCreator() {
             </>
           )}
         </div>
+
+        {loggedInUser && beans.length > 0 && (
+          <div style={{ display: "grid", gap: 6 }}>
+            <label>
+              Beans used (optional)
+              <select
+                value={beanId}
+                onChange={(e) => setBeanId(e.target.value)}
+                style={{ width: "100%", marginTop: 4 }}
+              >
+                <option value="">— None —</option>
+                {beans.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} — {b.roaster}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
       </section>
 
       <section style={{ display: "grid", gap: 12 }}>

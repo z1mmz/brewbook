@@ -38,6 +38,11 @@ function ReviewList({ recipeId }) {
             )}
           </HStack>
           <Text mt={1}>{review.content}</Text>
+          {review.bean && (
+            <Text fontSize="xs" opacity={0.6} mt={1}>
+              Brewed with: {review.bean.name} by {review.bean.roaster}
+            </Text>
+          )}
         </Box>
       ))}
     </VStack>

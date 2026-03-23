@@ -39,6 +39,11 @@ const recipeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
+  bean: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Bean",
+    default: null,
+  },
 }, { timestamps: true });
 
 recipeSchema.index({ title: "text", description: "text", type: "text", grind: "text" });

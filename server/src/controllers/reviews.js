@@ -8,7 +8,7 @@ const middleware = require('../utils/middleware')
 reviewsRouter.get('/', async (req, res) => {
     try {
         const filter = req.query.recipe ? { recipe: req.query.recipe } : {}
-        const allReviews = await Review.find(filter).populate('user', { username: 1 })
+        const allReviews = await Review.find(filter).populate('user', { username: 1 }).populate('bean', 'name roaster')
         res.json(allReviews)
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch reviews' })
@@ -30,7 +30,7 @@ reviewsRouter.get('/:id', async (req, res) => {
 
 reviewsRouter.post('/', middleware.userExtractor, async (req, res) => {
     try {
-        const { content, rating, recipe: recipeId } = req.body
+        const { content, rating, recipe: recipeId, bean } = req.body
         const user = req.user
         if (!user) {
             return res.status(401).json({ error: 'authentication required' })
@@ -39,7 +39,7 @@ reviewsRouter.post('/', middleware.userExtractor, async (req, res) => {
         if (!recipe) {
             return res.status(404).json({ error: 'Recipe not found' })
         }
-        const review = new Review({ content, rating, user: user._id, recipe: recipeId })
+        const review = new Review({ content, rating, user: user._id, recipe: recipeId, bean: bean || null })
         const savedReview = await review.save()
         user.reviews = user.reviews.concat(savedReview._id)
         await user.save()

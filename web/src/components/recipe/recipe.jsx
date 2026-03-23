@@ -25,6 +25,9 @@ function Recipe() {
         <p>Dose: {recipe.dose}</p>
         <p>Grind size: {recipe.grind}</p>
         <p>Water: {recipe.water}</p>
+        {recipe.bean && (
+          <p>Beans: <strong>{recipe.bean.name}</strong> by {recipe.bean.roaster}{recipe.bean.process ? ` · ${recipe.bean.process}` : ""}</p>
+        )}
 
         <HStack mt={4} mb={4}>
           <Button

@@ -17,6 +17,7 @@ export default function NavBar() {
     ? [
         { to: "/my-recipes", label: "My Recipes" },
         { to: "/saved-recipes", label: "Saved Recipes" },
+        { to: "/my-beans", label: "My Beans" },
         ...navLinkData,
       ]
     : navLinkData;

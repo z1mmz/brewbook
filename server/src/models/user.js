@@ -33,6 +33,12 @@ const userSchema = new mongoose.Schema({
       ref: "Review",
     },
   ],
+  beans: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Bean",
+    },
+  ],
 });
 
 userSchema.set("toJSON", {

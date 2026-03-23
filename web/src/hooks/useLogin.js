@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import recipeService from "../services/recipes";
 import reviewsService from "../services/reviews";
+import beansService from "../services/beans";
 import loginService from "../services/login";
 import LoginContext from "../contexts/loginContext";
 import { useContext } from "react";
@@ -20,6 +21,7 @@ export const useLogin = () => {
       loggedInUserDispatch({ type: "SET_LOGIN", payload: loggedInUser });
       recipeService.setToken(loggedInUser.token);
       reviewsService.setToken(loggedInUser.token);
+      beansService.setToken(loggedInUser.token);
     },
     onError: (error) => {
       toaster.create({

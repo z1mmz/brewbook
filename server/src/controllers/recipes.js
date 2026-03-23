@@ -54,7 +54,8 @@ recipeRouter.get("/recent", async (request, response) => {
     const recipes = await Recipe.find({})
       .sort({ createdAt: -1 })
       .limit(6)
-      .populate("user", "username");
+      .populate("user", "username")
+      .populate("bean", "name roaster");
     response.json(recipes);
   } catch (error) {
     console.error("Error fetching recent recipes:", error);
@@ -63,7 +64,7 @@ recipeRouter.get("/recent", async (request, response) => {
 });
 recipeRouter.get("/:id", async (request, response) => {
   const id = request.params.id;
-  const recipe = await Recipe.findById(id);
+  const recipe = await Recipe.findById(id).populate("bean", "name roaster process");
   response.json(recipe);
 });
 
@@ -161,10 +162,10 @@ recipeRouter.put(
       if (recipe.user.id !== user.id) {
         return response.status(401).json({ error: "unauthorized" });
       }
-      const { title, type, description, dose, grind, water, steps } = request.body;
+      const { title, type, description, dose, grind, water, steps, bean } = request.body;
       const updated = await Recipe.findByIdAndUpdate(
         id,
-        { title, type, description, dose, grind, water, steps },
+        { title, type, description, dose, grind, water, steps, bean: bean || null },
         { new: true, runValidators: true }
       );
       response.status(200).json(updated);

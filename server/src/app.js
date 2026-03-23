@@ -6,6 +6,7 @@ const middleware = require("./utils/middleware");
 const recipesRouter = require("./controllers/recipes");
 const usersRouter = require("./controllers/users");
 const reviewsRouter = require("./controllers/reviews");
+const beansRouter = require("./controllers/beans");
 const loginRouter = require("./controllers/login");
 const app = express();
 
@@ -25,6 +26,7 @@ app.get("/health", (req, res) => {
 app.use("/api/recipes", recipesRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/reviews", reviewsRouter);
+app.use("/api/beans", beansRouter);
 app.use("/api/login", loginRouter);
 
 app.get("/{*any}", (req, res) => {
