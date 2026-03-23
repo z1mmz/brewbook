@@ -25,8 +25,9 @@ export const useRecipe = (id) => {
 
   const createRecipeMutation = useMutation({
     mutationFn: (newRecipe) => recipeService.createRecipe(newRecipe),
-    onSuccess: () => {
+    onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      navigate(`/recipes/${created.id}`);
     },
     onError: (error) => {
       toaster.create({
