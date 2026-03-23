@@ -114,7 +114,7 @@ function Runner({ isOpen, onClose, recipe }) {
                     </Progress.Root>
                     <HStack justify="center" width="100%">
                       <Text fontSize="2xl" fontWeight="bold">
-                        {timeRemaining}s
+                        {Math.ceil(timeRemaining)}s
                       </Text>
                     </HStack>
                   </VStack>

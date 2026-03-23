@@ -1,78 +1,96 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
 export function useRecipeRunner(recipe) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [stepTimers, setStepTimers] = useState({}); // { stepIndex: timeRemaining }
   const [stepStatus, setStepStatus] = useState({}); // { stepIndex: 'running'|'paused'|'completed'|null }
   const [isRunnerOpen, setIsRunnerOpen] = useState(false);
+  const [tick, setTick] = useState(0); // incremented at 20fps to drive visual updates
 
-  const steps = recipe?.steps || [];
+  // Timestamp refs — mutations don't cause re-renders
+  const stepStartTimes = useRef({}); // { index: Date.now() when started/resumed }
+  const stepElapsedMs = useRef({});  // { index: accumulated ms before current run }
 
-  // Initialize all step timers
+  const steps = useMemo(() => recipe?.steps || [], [recipe?.steps]);
+
+  // Initialize step status
   useEffect(() => {
-    const newTimers = {};
     const newStatus = {};
-    steps.forEach((step, index) => {
-      newTimers[index] = step.timeSec || 0;
+    steps.forEach((_, index) => {
       newStatus[index] = null;
     });
-    setStepTimers(newTimers);
     setStepStatus(newStatus);
   }, [steps]);
 
-  // Handle timer countdown
-  useEffect(() => {
-    const timers = {};
+  const getRemainingMs = useCallback((index) => {
+    const timeSec = steps[index]?.timeSec || 0;
+    if (!timeSec) return 0;
+    const elapsed = stepElapsedMs.current[index] || 0;
+    const start = stepStartTimes.current[index];
+    const liveElapsed = start ? Date.now() - start : 0;
+    return Math.max(0, timeSec * 1000 - elapsed - liveElapsed);
+  }, [steps]);
 
-    steps.forEach((step, index) => {
-      const isRunning = stepStatus[index] === "running";
-      const timeRemaining = stepTimers[index] || 0;
-
-      if (isRunning && timeRemaining > 0) {
-        timers[index] = setInterval(() => {
-          setStepTimers((prev) => {
-            const updated = { ...prev };
-            updated[index] = Math.max(0, prev[index] - 1);
-
-            // Auto-stop when timer reaches 0
-            if (updated[index] === 0) {
-              setStepStatus((prevStatus) => ({
-                ...prevStatus,
-                [index]: "completed",
-              }));
-              if (index < steps.length) {
-                console.log(index, steps.length);
-                nextStep();
-              }
-            }
-            return updated;
-          });
-        }, 1000);
+  const nextStep = useCallback(() => {
+    setCurrentStepIndex((prev) => {
+      const next = prev + 1;
+      if (next < steps.length) {
+        // Auto-start the next step
+        stepStartTimes.current[next] = Date.now();
+        stepElapsedMs.current[next] = 0;
+        setStepStatus((prevStatus) => ({ ...prevStatus, [next]: "running" }));
+        return next;
       }
+      return prev;
     });
+  }, [steps.length]);
 
-    return () => {
-      Object.values(timers).forEach((timer) => clearInterval(timer));
-    };
-  }, [stepStatus, steps]);
+  // Single 50ms visual loop — only active when something is running
+  useEffect(() => {
+    const anyRunning = Object.values(stepStatus).some((s) => s === "running");
+    if (!anyRunning) return;
+
+    const id = setInterval(() => {
+      // Check for completions
+      steps.forEach((step, index) => {
+        if (stepStatus[index] === "running" && step.timeSec) {
+          if (getRemainingMs(index) <= 0) {
+            stepStartTimes.current[index] = null;
+            setStepStatus((prev) => ({ ...prev, [index]: "completed" }));
+            if (index < steps.length - 1) {
+              nextStep();
+            }
+          }
+        }
+      });
+      setTick((t) => t + 1);
+    }, 50);
+
+    return () => clearInterval(id);
+  }, [stepStatus, steps, getRemainingMs, nextStep]);
 
   const startStep = useCallback((stepIndex) => {
+    stepStartTimes.current[stepIndex] = Date.now();
+    // Keep any prior accumulated elapsed (for resume after pause)
     setStepStatus((prev) => ({ ...prev, [stepIndex]: "running" }));
   }, []);
 
   const pauseStep = useCallback((stepIndex) => {
+    const start = stepStartTimes.current[stepIndex];
+    if (start) {
+      stepElapsedMs.current[stepIndex] =
+        (stepElapsedMs.current[stepIndex] || 0) + (Date.now() - start);
+      stepStartTimes.current[stepIndex] = null;
+    }
     setStepStatus((prev) => ({ ...prev, [stepIndex]: "paused" }));
   }, []);
 
   const resetStep = useCallback(
     (stepIndex) => {
-      const step = steps[stepIndex];
-      if (step) {
-        setStepTimers((prev) => ({ ...prev, [stepIndex]: step.timeSec || 0 }));
-        setStepStatus((prev) => ({ ...prev, [stepIndex]: null }));
-      }
+      stepStartTimes.current[stepIndex] = null;
+      stepElapsedMs.current[stepIndex] = 0;
+      setStepStatus((prev) => ({ ...prev, [stepIndex]: null }));
     },
-    [steps]
+    []
   );
 
   const goToStep = useCallback(
@@ -82,37 +100,43 @@ export function useRecipeRunner(recipe) {
         startStep(stepIndex);
       }
     },
-    [steps.length]
+    [steps.length, startStep]
   );
 
-  const nextStep = useCallback(() => {
-    if (currentStepIndex < steps.length - 1) {
-      goToStep(currentStepIndex + 1);
-    }
-  }, [currentStepIndex, steps.length, goToStep]);
-
   const prevStep = useCallback(() => {
-    if (currentStepIndex > 0) {
-      goToStep(currentStepIndex - 1);
-    }
-  }, [currentStepIndex, goToStep]);
+    setCurrentStepIndex((prev) => {
+      if (prev > 0) {
+        goToStep(prev - 1);
+        return prev - 1;
+      }
+      return prev;
+    });
+  }, [goToStep]);
 
   const start = useCallback(() => {
     steps.forEach((_, index) => {
-      resetStep(index);
+      stepStartTimes.current[index] = null;
+      stepElapsedMs.current[index] = 0;
     });
+    const newStatus = {};
+    steps.forEach((_, index) => { newStatus[index] = null; });
+    setStepStatus(newStatus);
     setIsRunnerOpen(true);
     setCurrentStepIndex(0);
     startStep(0);
-  }, [startStep]);
+  }, [steps, startStep]);
 
   const close = useCallback(() => {
     setIsRunnerOpen(false);
     steps.forEach((_, index) => {
-      resetStep(index);
+      stepStartTimes.current[index] = null;
+      stepElapsedMs.current[index] = 0;
     });
+    const newStatus = {};
+    steps.forEach((_, index) => { newStatus[index] = null; });
+    setStepStatus(newStatus);
     setCurrentStepIndex(0);
-  }, [resetStep]);
+  }, [steps]);
 
   const currentStep = steps[currentStepIndex];
   const isLastStep = currentStepIndex === steps.length - 1;
@@ -123,12 +147,12 @@ export function useRecipeRunner(recipe) {
     currentStep,
     isLastStep,
     steps,
-    stepTimers,
     stepStatus,
     isRunnerOpen,
+    tick,
 
     // Timer accessors
-    getStepTime: (stepIndex) => stepTimers[stepIndex] || 0,
+    getStepTime: (stepIndex) => getRemainingMs(stepIndex) / 1000,
     getStepStatus: (stepIndex) => stepStatus[stepIndex] || null,
 
     // Actions
