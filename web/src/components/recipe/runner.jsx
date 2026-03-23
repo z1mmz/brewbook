@@ -8,9 +8,10 @@ import {
   HStack,
   VStack,
   Text,
+  Box,
 } from "@chakra-ui/react";
 import { useRecipeRunnerContext } from "../../contexts/RecipeRunnerContext";
-import { use, useEffect } from "react";
+
 function Runner({ isOpen, onClose, recipe }) {
   const {
     currentStepIndex,
@@ -25,26 +26,43 @@ function Runner({ isOpen, onClose, recipe }) {
     prevStep,
   } = useRecipeRunnerContext();
 
-  console.log("Runner render", { currentStepIndex, currentStep });
-  if (!currentStep) {
-    return null;
-  }
+  if (!currentStep) return null;
 
   const timeRemaining = getStepTime(currentStepIndex);
   const status = getStepStatus(currentStepIndex);
   const isRunning = status === "running";
 
-  const handleFinish = () => {
-    onClose();
-  };
+  // Compute cumulative water poured across all steps up to and including now.
+  // Completed steps contribute their full waterMl.
+  // The current step interpolates linearly if it has both timeSec and waterMl.
+  const cumulativeWater = steps.reduce((total, step, index) => {
+    const stepStatus = getStepStatus(index);
+    const waterMl = step.waterMl || 0;
+    if (!waterMl) return total;
 
-  const handleNext = () => {
-    if (isLastStep) {
-      handleFinish();
-    } else {
-      nextStep();
+    if (index < currentStepIndex || stepStatus === "completed") {
+      return total + waterMl;
     }
-  };
+
+    if (index === currentStepIndex) {
+      if (step.timeSec) {
+        const elapsed = step.timeSec - getStepTime(index);
+        return total + waterMl * (elapsed / step.timeSec);
+      }
+      // No timer: show full step water once the step is active
+      if (stepStatus === "running" || stepStatus === "paused" || stepStatus === "completed") {
+        return total + waterMl;
+      }
+    }
+
+    return total;
+  }, 0);
+
+  const totalRecipeWater = recipe?.water || 0;
+  const displayWater = Math.round(cumulativeWater);
+
+  const handleFinish = () => onClose();
+  const handleNext = () => (isLastStep ? handleFinish() : nextStep());
 
   return (
     <Dialog.Root
@@ -65,6 +83,7 @@ function Runner({ isOpen, onClose, recipe }) {
                 </Text>
               </VStack>
             </Dialog.Header>
+
             <Dialog.Body>
               <VStack spacing={6} align="stretch">
                 <Heading size="sm">{currentStep.title}</Heading>
@@ -72,11 +91,15 @@ function Runner({ isOpen, onClose, recipe }) {
                 {currentStep.notes && (
                   <Text fontSize="sm">{currentStep.notes}</Text>
                 )}
+
+                {/* Step water target */}
                 {currentStep.waterMl && (
-                  <Text fontSize="sm" fontWeight="bold">
-                    Water: {currentStep.waterMl}ml
+                  <Text fontSize="sm" opacity={0.7}>
+                    Pour {currentStep.waterMl}ml this step
                   </Text>
                 )}
+
+                {/* Timer */}
                 {currentStep.timeSec && (
                   <VStack spacing={2} width="100%">
                     <Progress.Root
@@ -96,8 +119,42 @@ function Runner({ isOpen, onClose, recipe }) {
                     </HStack>
                   </VStack>
                 )}
+
+                {/* Live water counter */}
+                {totalRecipeWater > 0 && (
+                  <Box
+                    borderWidth="1px"
+                    borderRadius="xl"
+                    p={4}
+                    textAlign="center"
+                  >
+                    <Text fontSize="xs" fontWeight="semibold" letterSpacing="widest" textTransform="uppercase" opacity={0.5} mb={1}>
+                      Scale target
+                    </Text>
+                    <HStack justify="center" align="baseline" gap={1}>
+                      <Text fontSize="4xl" fontWeight="bold" lineHeight="1">
+                        {displayWater}
+                      </Text>
+                      <Text fontSize="lg" opacity={0.5}>
+                        / {totalRecipeWater}g
+                      </Text>
+                    </HStack>
+                    <Progress.Root
+                      max={totalRecipeWater}
+                      value={displayWater}
+                      size="xs"
+                      colorPalette="blue"
+                      mt={3}
+                    >
+                      <Progress.Track>
+                        <Progress.Range />
+                      </Progress.Track>
+                    </Progress.Root>
+                  </Box>
+                )}
               </VStack>
             </Dialog.Body>
+
             <Dialog.Footer>
               <HStack spacing={2}>
                 <Button
@@ -118,11 +175,12 @@ function Runner({ isOpen, onClose, recipe }) {
                     {isRunning ? "Pause" : "Start"}
                   </Button>
                 )}
-                <Button colorScheme="blue" onClick={handleNext}>
+                <Button colorPalette="blue" onClick={handleNext}>
                   {isLastStep ? "Finish" : "Next"}
                 </Button>
               </HStack>
             </Dialog.Footer>
+
             <Dialog.CloseTrigger asChild>
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>
