@@ -9,9 +9,9 @@ import {
   Input,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { useNavigate } from "react-router";
-import { useState, useEffect } from "react";
 
+import { useState, useEffect } from "react";
+import RecipeCard from "./recipeCard";
 function RecipeList() {
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
@@ -37,7 +37,6 @@ function RecipeList() {
   const hasPrev = page > 1;
   const hasNext = page < totalPages;
 
-  const navigate = useNavigate();
   return (
     <VStack spacing={4} align="stretch">
       <Input
@@ -81,29 +80,7 @@ function RecipeList() {
           gap="6"
         >
           {recipes.map((recipe) => (
-            <div key={recipe._id}>
-              <Card.Root
-                onClick={() => navigate(`/recipes/${recipe._id}`)}
-                bg={{ _hover: "tan" }}
-              >
-                <Card.Header>
-                  <b>{recipe.title}</b>
-                </Card.Header>
-                <Card.Body>
-                  <p>Dose: {recipe.dose}g</p>
-                  <p>Grind: {recipe.grind}</p>
-                  <p>Water: {recipe.water}ml</p>
-                </Card.Body>
-                <Card.Footer justifyContent="flex-end">
-                  <Button
-                    onClick={() => navigate(`/recipes/${recipe._id}`)}
-                    variant="outline"
-                  >
-                    View
-                  </Button>
-                </Card.Footer>
-              </Card.Root>
-            </div>
+            <RecipeCard key={recipe._id} recipe={recipe} />
           ))}
         </Grid>
       )}
