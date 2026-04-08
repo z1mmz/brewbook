@@ -28,7 +28,7 @@ recipeRouter.get("/", async (request, response) => {
     pipeline.push({
       $facet: {
         metadata: [{ $count: "total" }],
-        data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
+        data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize },{ $addFields: { id: { $toString: "$_id" } } }],
       },
     });
 

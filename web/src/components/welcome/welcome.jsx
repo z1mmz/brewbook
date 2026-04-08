@@ -5,7 +5,6 @@ import { useNavigate } from "react-router";
 import {
   Box,
   Button,
-  Card,
   Grid,
   Heading,
   HStack,
@@ -17,7 +16,7 @@ import {
 import { Coffee, BookOpen, Users } from "lucide-react";
 import recipeService from "../../services/recipes";
 import LoginContext from "../../contexts/loginContext";
-
+import RecipeCard from "../recipe/recipeCard";
 function FeatureCard({ icon, title, description }) {
   const FeatureIcon = icon;
   return (
@@ -28,37 +27,6 @@ function FeatureCard({ icon, title, description }) {
       <Heading size="md">{title}</Heading>
       <Text opacity={0.7}>{description}</Text>
     </VStack>
-  );
-}
-
-function RecipeCard({ recipe }) {
-  const navigate = useNavigate();
-  return (
-    <Card.Root
-      onClick={() => navigate(`/recipes/${recipe.id}`)}
-      cursor="pointer"
-      _hover={{ shadow: "md", transform: "translateY(-2px)" }}
-      transition="all 0.15s"
-    >
-      <Card.Header pb={1}>
-        <Text fontWeight="bold" lineClamp={1}>{recipe.title}</Text>
-        <Text fontSize="sm" opacity={0.6}>
-          by {recipe.user?.username ?? "Unknown"}
-        </Text>
-      </Card.Header>
-      <Card.Body pt={0}>
-        <HStack gap={4} fontSize="sm" opacity={0.8}>
-          <Text>☕ {recipe.dose}g</Text>
-          <Text>💧 {recipe.water}ml</Text>
-          <Text>⚙️ {recipe.grind}</Text>
-        </HStack>
-        {recipe.description && (
-          <Text fontSize="sm" mt={2} opacity={0.7} lineClamp={2}>
-            {recipe.description}
-          </Text>
-        )}
-      </Card.Body>
-    </Card.Root>
   );
 }
 
