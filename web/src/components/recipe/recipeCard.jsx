@@ -23,6 +23,7 @@ export default function RecipeCard({ recipe }) {
               <Text>☕ {recipe.dose}g</Text>
               <Text>💧 {recipe.water}ml</Text>
               <Text>⚙️ {recipe.grind}</Text>
+              <Text>{recipe.iced ? "🧊 Iced" : "☕ Hot"}</Text>
             </HStack>
             {recipe.description && (
               <Text fontSize="sm" mt={2} opacity={0.7} lineClamp={2}>

@@ -33,6 +33,7 @@ export default function RecipeCreator() {
   const [type, setType] = useState("pour_over");
   const [description, setDescription] = useState("");
   const [dose, setDose] = useState("");
+  const [iced, setIced] = useState(false);
   const [steps, setSteps] = useState([emptyStep()]);
   const [submitError, setSubmitError] = useState(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -50,6 +51,7 @@ export default function RecipeCreator() {
         setSteps(recipe.steps.map(stepToForm));
       }
       setBeanId(recipe.bean?.id ?? "");
+      setIced(recipe.iced ?? false);
     }
   }, [isEditMode, recipe]);
 
@@ -98,7 +100,7 @@ export default function RecipeCreator() {
 
   function updateStep(index, patch) {
     setSteps((prev) =>
-      prev.map((s, i) => (i === index ? { ...s, ...patch } : s))
+      prev.map((s, i) => (i === index ? { ...s, ...patch } : s)),
     );
   }
 
@@ -108,7 +110,7 @@ export default function RecipeCreator() {
 
   function removeStep(index) {
     setSteps((prev) =>
-      prev.length === 1 ? prev : prev.filter((_, i) => i !== index)
+      prev.length === 1 ? prev : prev.filter((_, i) => i !== index),
     );
   }
 
@@ -129,6 +131,7 @@ export default function RecipeCreator() {
       dose: Number(dose),
       type: type,
       description: description.trim(),
+      iced,
       steps: steps.map((s) => ({
         title: s.title.trim(),
         ...(s.notes === "" ? {} : { notes: s.notes.trim() }),
@@ -148,7 +151,7 @@ export default function RecipeCreator() {
   const stepWaterSum = useMemo(() => {
     return steps.reduce(
       (acc, s) => acc + (s.waterMl === "" ? 0 : Number(s.waterMl) || 0),
-      0
+      0,
     );
   }, [steps]);
 
@@ -245,6 +248,44 @@ export default function RecipeCreator() {
             {shownErrors.coffeeGrams && (
               <div style={{ color: "crimson" }}>{shownErrors.coffeeGrams}</div>
             )}
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gap: 6 }}>
+          <label>Brew temperature</label>
+          <div style={{ display: "flex", gap: 16, marginTop: 4 }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="radio"
+                name="brewTemp"
+                checked={!iced}
+                onChange={() => setIced(false)}
+              />
+              Hot
+            </label>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="radio"
+                name="brewTemp"
+                checked={iced}
+                onChange={() => setIced(true)}
+              />
+              Iced
+            </label>
           </div>
         </div>
 
@@ -402,7 +443,9 @@ export default function RecipeCreator() {
 
         {submitError && <div style={{ color: "crimson" }}>{submitError}</div>}
 
-        <button type="submit">{isEditMode ? "Save changes" : "Save recipe"}</button>
+        <button type="submit">
+          {isEditMode ? "Save changes" : "Save recipe"}
+        </button>
       </section>
     </form>
   );

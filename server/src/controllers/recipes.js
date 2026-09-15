@@ -162,10 +162,10 @@ recipeRouter.put(
       if (recipe.user.id !== user.id) {
         return response.status(401).json({ error: "unauthorized" });
       }
-      const { title, type, description, dose, grind, water, steps, bean } = request.body;
+      const { title, type, description, dose, grind, water, steps, bean, iced } = request.body;
       const updated = await Recipe.findByIdAndUpdate(
         id,
-        { title, type, description, dose, grind, water, steps, bean: bean || null },
+        { title, type, description, dose, grind, water, steps, bean: bean || null, iced },
         { new: true, runValidators: true }
       );
       response.status(200).json(updated);
