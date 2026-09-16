@@ -10,6 +10,7 @@ import MyBeans from "./components/bean/myBeans";
 import SavedRecipes from "./components/recipe/savedRecipes";
 import LoginForm from "./components/auth/loginForm";
 import SignupForm from "./components/auth/signupForm";
+import AuthCallback from "./components/auth/authCallback";
 import NavBar from "./components/ui/navBar";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/recipes/create" element={<RecipeCreator />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/create" element={<RecipeCreator />} />
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>

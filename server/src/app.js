@@ -1,4 +1,5 @@
 const express = require("express");
+const passport = require("passport");
 const db = require("./utils/db");
 const path = require("path");
 
@@ -8,12 +9,14 @@ const usersRouter = require("./controllers/users");
 const reviewsRouter = require("./controllers/reviews");
 const beansRouter = require("./controllers/beans");
 const loginRouter = require("./controllers/login");
+const googleAuthRouter = require("./controllers/googleAuth");
 const app = express();
 
 app.use(express.static(path.join(__dirname, "dist")));
 app.use(express.json());
 app.use(middleware.requestLogger);
 app.use(middleware.tokenExtractor);
+app.use(passport.initialize());
 
 app.get("/health", (req, res) => {
   if (db.isDBConnected) {
@@ -28,6 +31,7 @@ app.use("/api/users", usersRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/beans", beansRouter);
 app.use("/api/login", loginRouter);
+app.use("/api/auth/google", googleAuthRouter);
 
 app.get("/{*any}", (req, res) => {
   res.sendFile(path.join(__dirname, "dist", "index.html"));

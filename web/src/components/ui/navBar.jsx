@@ -69,7 +69,9 @@ export default function NavBar() {
       <HStack gap={3}>
         {loggedInUser ? (
           <>
-            <span style={{ opacity: 0.8 }}>{loggedInUser.username}</span>
+            <span style={{ opacity: 0.8 }}>
+              {loggedInUser.name || loggedInUser.username}
+            </span>
             <Menu.Root>
               <Menu.Trigger asChild>
                 <IconButton
