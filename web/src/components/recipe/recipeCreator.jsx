@@ -7,12 +7,13 @@ import LoginContext from "../../contexts/loginContext";
 import LexicalRecipeEditor from "./lexicalEditor";
 import { normalizeDescription } from "./markdownUtils";
 
-const emptyStep = () => ({ title: "", notes: "", timeSec: "", waterMl: "" });
+const emptyStep = () => ({ title: "", notes: "", timeSec: "", waterMl: "", pourEndSec: "" });
 const stepToForm = (step) => ({
   title: step.title ?? "",
   notes: step.notes ?? "",
   timeSec: step.timeSec !== undefined ? String(step.timeSec) : "",
   waterMl: step.waterMl !== undefined ? String(step.waterMl) : "",
+  pourEndSec: step.pourEndSec !== undefined ? String(step.pourEndSec) : "",
 });
 
 export default function RecipeCreator() {
@@ -80,6 +81,11 @@ export default function RecipeCreator() {
       if (!step.title.trim()) error.title = "Add a step name.";
       if (step.timeSec !== "" && (Number.isNaN(Number(step.timeSec)) || Number(step.timeSec) < 0)) error.timeSec = "Use zero or more seconds.";
       if (step.waterMl !== "" && (Number.isNaN(Number(step.waterMl)) || Number(step.waterMl) < 0)) error.waterMl = "Use zero or more millilitres.";
+      if (step.pourEndSec !== "" && (Number.isNaN(Number(step.pourEndSec)) || Number(step.pourEndSec) < 0)) {
+        error.pourEndSec = "Use zero or more seconds.";
+      } else if (step.pourEndSec !== "" && step.timeSec !== "" && Number(step.pourEndSec) > Number(step.timeSec)) {
+        error.pourEndSec = "Pour end can't be later than the step time.";
+      }
       return error;
     });
     if (stepErrors.some((step) => Object.keys(step).length)) result.steps = stepErrors;
@@ -106,6 +112,7 @@ export default function RecipeCreator() {
         ...(step.notes.trim() ? { notes: step.notes.trim() } : {}),
         ...(step.timeSec !== "" ? { timeSec: Number(step.timeSec) } : {}),
         ...(step.waterMl !== "" ? { waterMl: Number(step.waterMl) } : {}),
+        ...(step.pourEndSec !== "" ? { pourEndSec: Number(step.pourEndSec) } : {}),
       })),
     };
     if (!loggedInUser) {
@@ -187,7 +194,8 @@ export default function RecipeCreator() {
                     {stepError.title && <div className="field-error">{stepError.title}</div>}
                     <textarea value={step.notes} onChange={(event) => updateStep(index, { notes: event.target.value })} placeholder="What should the brewer do?" rows={3} />
                     <div className="step-meta-grid"><label>Time (seconds)<input value={step.timeSec} onChange={(event) => updateStep(index, { timeSec: event.target.value })} inputMode="numeric" placeholder="45" /></label><label>Water (ml)<input value={step.waterMl} onChange={(event) => updateStep(index, { waterMl: event.target.value })} inputMode="numeric" placeholder="60" /></label></div>
-                    {(stepError.timeSec || stepError.waterMl) && <div className="field-error">{stepError.timeSec || stepError.waterMl}</div>}
+                    <label className="step-pour-field">Water pour ends at (seconds)<input value={step.pourEndSec} onChange={(event) => updateStep(index, { pourEndSec: event.target.value })} inputMode="numeric" placeholder="10" /><small className="step-pour-hint">Water is poured from the start of the step until this time, then you wait. Leave blank to spread it across the whole step.</small></label>
+                    {(stepError.timeSec || stepError.waterMl || stepError.pourEndSec) && <div className="field-error">{stepError.timeSec || stepError.waterMl || stepError.pourEndSec}</div>}
                   </div>
                 </article>;
               })}

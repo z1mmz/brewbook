@@ -34,7 +34,9 @@ function Runner({ isOpen, onClose, recipe }) {
 
   // Compute cumulative water poured across all steps up to and including now.
   // Completed steps contribute their full waterMl.
-  // The current step interpolates linearly if it has both timeSec and waterMl.
+  // The current step ramps its water during its pour window, then holds:
+  //  - pourEndSec set: pour from the step start until pourEndSec, then wait
+  //  - otherwise: spread evenly across the whole step time
   const cumulativeWater = steps.reduce((total, step, index) => {
     const stepStatus = getStepStatus(index);
     const waterMl = step.waterMl || 0;
@@ -47,7 +49,9 @@ function Runner({ isOpen, onClose, recipe }) {
     if (index === currentStepIndex) {
       if (step.timeSec) {
         const elapsed = step.timeSec - getStepTime(index);
-        return total + waterMl * (elapsed / step.timeSec);
+        const pourWindow = step.pourEndSec || step.timeSec;
+        const progress = Math.min(1, Math.max(0, elapsed / pourWindow));
+        return total + waterMl * progress;
       }
       // No timer: show full step water once the step is active
       if (stepStatus === "running" || stepStatus === "paused" || stepStatus === "completed") {
@@ -96,6 +100,9 @@ function Runner({ isOpen, onClose, recipe }) {
                 {currentStep.waterMl && (
                   <Text fontSize="sm" opacity={0.7}>
                     Pour {currentStep.waterMl}ml this step
+                    {currentStep.pourEndSec
+                      ? ` by ${currentStep.pourEndSec}s`
+                      : ""}
                   </Text>
                 )}
 

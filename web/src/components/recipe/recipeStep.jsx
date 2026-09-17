@@ -27,6 +27,9 @@ function RecipeStep({ step, index }) {
       <Card.Body>
         {step.notes ? <p>Notes: {step.notes}</p> : null}
         {step.waterMl ? <p>Water: {step.waterMl}ml</p> : null}
+        {step.waterMl && step.pourEndSec ? (
+          <p>Pour complete by: {step.pourEndSec} seconds</p>
+        ) : null}
         {step.timeSec ? <p>Time: {step.timeSec} seconds</p> : null}
 
         {step.timeSec ? (
