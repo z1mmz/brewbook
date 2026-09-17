@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { Button, Heading, Text, VStack } from "@chakra-ui/react";
 import useRecipe from "../../hooks/useRecipe";
 import useBeans from "../../hooks/useBeans";
@@ -17,7 +17,9 @@ const stepToForm = (step) => ({
 
 export default function RecipeCreator() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const isEditMode = Boolean(id);
+  const shouldResume = searchParams.get("resume") === "1";
   const navigate = useNavigate();
   const { recipe, isLoading, isError, createRecipe, updateRecipe } = useRecipe(id);
   const { loggedInUser } = useContext(LoginContext);
@@ -33,6 +35,7 @@ export default function RecipeCreator() {
   const [steps, setSteps] = useState([emptyStep()]);
   const [submitError, setSubmitError] = useState(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [pendingRecipe, setPendingRecipe] = useState(null);
 
   useEffect(() => {
     if (isEditMode && recipe?.title) {
@@ -47,6 +50,24 @@ export default function RecipeCreator() {
       setIced(recipe.iced ?? false);
     }
   }, [isEditMode, recipe]);
+
+  useEffect(() => {
+    if (isEditMode || !shouldResume || !loggedInUser) return;
+    const storedRecipe = sessionStorage.getItem("pendingRecipe");
+    if (!storedRecipe) return;
+    try {
+      setPendingRecipe(JSON.parse(storedRecipe));
+    } catch {
+      sessionStorage.removeItem("pendingRecipe");
+    }
+  }, [isEditMode, shouldResume, loggedInUser]);
+
+  useEffect(() => {
+    if (!pendingRecipe || !loggedInUser) return;
+    sessionStorage.removeItem("pendingRecipe");
+    createRecipe(pendingRecipe);
+    setPendingRecipe(null);
+  }, [createRecipe, loggedInUser, pendingRecipe]);
 
   const errors = useMemo(() => {
     const result = {};
@@ -87,6 +108,11 @@ export default function RecipeCreator() {
         ...(step.waterMl !== "" ? { waterMl: Number(step.waterMl) } : {}),
       })),
     };
+    if (!loggedInUser) {
+      sessionStorage.setItem("pendingRecipe", JSON.stringify(recipeData));
+      navigate("/login");
+      return;
+    }
     if (isEditMode) updateRecipe(id, recipeData);
     else createRecipe(recipeData);
   }

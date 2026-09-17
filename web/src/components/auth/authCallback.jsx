@@ -37,7 +37,7 @@ function AuthCallback() {
     recipeService.setToken(token);
     reviewsService.setToken(token);
     beansService.setToken(token);
-    navigate("/");
+    navigate(sessionStorage.getItem("pendingRecipe") ? "/recipes/create?resume=1" : "/");
   }, [searchParams, navigate, loggedInUserDispatch]);
 
   return (

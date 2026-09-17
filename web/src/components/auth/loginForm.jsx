@@ -22,7 +22,7 @@ function LoginForm() {
     event.preventDefault();
     try {
       await login({ username, password });
-      navigate("/");
+      navigate(sessionStorage.getItem("pendingRecipe") ? "/recipes/create?resume=1" : "/");
     } catch (error) {
       console.error("Error logging in:", error);
     }
