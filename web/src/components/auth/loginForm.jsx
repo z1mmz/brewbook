@@ -13,16 +13,15 @@ import {
 import { PasswordInput, PasswordStrengthMeter } from "../ui/password-input";
 import { Link, useNavigate } from "react-router";
 function LoginForm() {
-  const { login } = useLogin();
+  const { login, isLoggingIn } = useLogin();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [password2, setPassword2] = useState("");
-  const [visible, setVisible] = useState(false);
+  const [, setVisible] = useState(false);
   const navigate = useNavigate();
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
     try {
-      login({ username, password });
+      await login({ username, password });
       navigate("/");
     } catch (error) {
       console.error("Error logging in:", error);
@@ -59,7 +58,7 @@ function LoginForm() {
             onVisibleChange={setVisible}
           />
         </Field.Root>
-        <Button type="submit" width="full">Login</Button>
+        <Button type="submit" width="full" loading={isLoggingIn}>Login</Button>
       </form>
 
       <Separator width="full" />

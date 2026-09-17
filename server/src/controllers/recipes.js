@@ -64,7 +64,12 @@ recipeRouter.get("/recent", async (request, response) => {
 });
 recipeRouter.get("/:id", async (request, response) => {
   const id = request.params.id;
-  const recipe = await Recipe.findById(id).populate("bean", "name roaster process");
+  const recipe = await Recipe.findById(id)
+    .populate("bean", "name roaster process")
+    .populate("user", "username");
+  if (!recipe) {
+    return response.status(404).json({ error: "Recipe not found" });
+  }
   response.json(recipe);
 });
 

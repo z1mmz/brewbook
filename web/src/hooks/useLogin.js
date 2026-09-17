@@ -39,7 +39,8 @@ export const useLogin = () => {
     },
   });
   return {
-    login: (credentials) => loginMutation.mutate(credentials),
+    login: (credentials) => loginMutation.mutateAsync(credentials),
+    isLoggingIn: loginMutation.isPending,
     logout: logoutMutation.mutate,
   };
 };

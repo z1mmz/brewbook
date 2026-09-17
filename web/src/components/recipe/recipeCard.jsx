@@ -4,8 +4,10 @@ import {
     Text
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
+import { descriptionToPlainText } from "./markdownUtils";
 export default function RecipeCard({ recipe }) {
     const navigate = useNavigate();
+    const description = descriptionToPlainText(recipe.description);
     return (    <Card.Root
           onClick={() => navigate(`/recipes/${recipe.id}`)}
           cursor="pointer"
@@ -25,9 +27,9 @@ export default function RecipeCard({ recipe }) {
               <Text>⚙️ {recipe.grind}</Text>
               <Text>{recipe.iced ? "🧊 Iced" : "☕ Hot"}</Text>
             </HStack>
-            {recipe.description && (
+            {description && (
               <Text fontSize="sm" mt={2} opacity={0.7} lineClamp={2}>
-                {recipe.description}
+                {description}
               </Text>
             )}
           </Card.Body>

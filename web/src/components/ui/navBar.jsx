@@ -85,10 +85,8 @@ export default function NavBar() {
 
               <Menu.Positioner>
                 <Menu.Content>
-                  <Menu.Item>
-                    <ChakraLink onClick={logout} cursor="pointer">
-                      Logout
-                    </ChakraLink>
+                  <Menu.Item value="logout" onClick={() => logout()}>
+                    <ChakraLink cursor="pointer">Logout</ChakraLink>
                   </Menu.Item>
                 </Menu.Content>
               </Menu.Positioner>

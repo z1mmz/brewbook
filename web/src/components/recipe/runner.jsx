@@ -136,7 +136,7 @@ function Runner({ isOpen, onClose, recipe }) {
                         {displayWater}
                       </Text>
                       <Text fontSize="lg" opacity={0.5}>
-                        / {totalRecipeWater}g
+                        / {totalRecipeWater}ml
                       </Text>
                     </HStack>
                     <Progress.Root

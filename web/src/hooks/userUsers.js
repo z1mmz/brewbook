@@ -17,6 +17,7 @@ export const useUser = () => {
   });
 
   return {
-    createUser: (credentials) => createUserMutation.mutate(credentials),
+    createUser: (credentials) => createUserMutation.mutateAsync(credentials),
+    isCreating: createUserMutation.isPending,
   };
 };

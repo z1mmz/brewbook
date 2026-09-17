@@ -4,11 +4,9 @@ const baseUrl = "/api/recipes";
 let token = null;
 const setToken = (newToken) => {
   token = `Bearer ${newToken}`;
-  console.log(token);
 };
 
 const getAll = (params = {}) => {
-  console.log("Fetching recipes with params:", params);
   const request = axios.get(baseUrl, { params });
   return request.then((response) => response.data);
 };
@@ -17,7 +15,6 @@ const getRecipe = (id) => {
   return request.then((response) => response.data);
 };
 const createRecipe = async (recipe) => {
-  console.log("creating recipe", recipe);
   const config = {
     headers: { Authorization: token },
   };
@@ -26,7 +23,6 @@ const createRecipe = async (recipe) => {
 };
 
 const getByUser = (userId, params = {}) => {
-  console.log("Fetching recipes for user:", userId);
   const request = axios.get(`${baseUrl}/user/${userId}`, { params });
   return request.then((response) => response.data);
 };
@@ -46,7 +42,6 @@ const getRecent = () =>
   axios.get(`${baseUrl}/recent`).then((r) => r.data);
 
 const toggleSaveRecipe = async (recipeId) => {
-  console.log("Toggling save for recipe:", recipeId);
   const config = {
     headers: { Authorization: token },
   };
@@ -55,7 +50,6 @@ const toggleSaveRecipe = async (recipeId) => {
 };
 
 const getSavedRecipes = (params = {}) => {
-  console.log("Fetching saved recipes with params:", params);
   const config = {
     headers: { Authorization: token },
   };

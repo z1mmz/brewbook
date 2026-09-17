@@ -31,18 +31,14 @@ export function useRecipeRunner(recipe) {
   }, [steps]);
 
   const nextStep = useCallback(() => {
-    setCurrentStepIndex((prev) => {
-      const next = prev + 1;
-      if (next < steps.length) {
-        // Auto-start the next step
-        stepStartTimes.current[next] = Date.now();
-        stepElapsedMs.current[next] = 0;
-        setStepStatus((prevStatus) => ({ ...prevStatus, [next]: "running" }));
-        return next;
-      }
-      return prev;
-    });
-  }, [steps.length]);
+    const next = currentStepIndex + 1;
+    if (next >= steps.length) return;
+    // Auto-start the next step
+    stepStartTimes.current[next] = Date.now();
+    stepElapsedMs.current[next] = 0;
+    setStepStatus((prevStatus) => ({ ...prevStatus, [next]: "running" }));
+    setCurrentStepIndex(next);
+  }, [currentStepIndex, steps.length]);
 
   // Single 50ms visual loop — only active when something is running
   useEffect(() => {
@@ -104,14 +100,11 @@ export function useRecipeRunner(recipe) {
   );
 
   const prevStep = useCallback(() => {
-    setCurrentStepIndex((prev) => {
-      if (prev > 0) {
-        goToStep(prev - 1);
-        return prev - 1;
-      }
-      return prev;
-    });
-  }, [goToStep]);
+    if (currentStepIndex <= 0) return;
+    const previous = currentStepIndex - 1;
+    setCurrentStepIndex(previous);
+    startStep(previous);
+  }, [currentStepIndex, startStep]);
 
   const start = useCallback(() => {
     steps.forEach((_, index) => {

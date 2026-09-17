@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { useNavigate } from "react-router";
 import {
   Box,
   Button,

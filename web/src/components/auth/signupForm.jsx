@@ -9,20 +9,18 @@ function SignupForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [visible, setVisible] = useState(false);
+  const [, setVisible] = useState(false);
   const navigate = useNavigate();
-  const { createUser } = useUser();
+  const { createUser, isCreating } = useUser();
 
-  const handleSignUp = (event) => {
+  const handleSignUp = async (event) => {
     event.preventDefault();
-    console.log(event.target);
     try {
-      createUser({ username, password, email });
+      await createUser({ username, password, email });
       navigate("/login");
     } catch (error) {
       console.error("Error creating user:", error);
     }
-    // Sign up logic here
   };
   const clearForm = (event) => {
     event.preventDefault();
@@ -68,7 +66,7 @@ function SignupForm() {
         </Field.Root>
         <div>
           <Button onClick={clearForm}>Cancel</Button>{" "}
-          <Button type="submit">Signup</Button>
+          <Button type="submit" loading={isCreating}>Signup</Button>
         </div>
       </form>
 
