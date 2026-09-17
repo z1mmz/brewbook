@@ -21,13 +21,8 @@ function RecipeStep({ step, index }) {
     pauseStep(index);
   };
 
-  const progressPercent =
-    step.timeSec && timeRemaining > 0
-      ? ((step.timeSec - timeRemaining) / step.timeSec) * 100
-      : 0;
-
   return (
-    <Card.Root key={index}>
+    <Card.Root key={index} className="recipe-step-card">
       <Card.Header>{step.title}</Card.Header>
       <Card.Body>
         {step.notes ? <p>Notes: {step.notes}</p> : null}
@@ -37,7 +32,7 @@ function RecipeStep({ step, index }) {
         {step.timeSec ? (
           <div>
             <Progress.Root
-              maxW="20vw"
+              maxW="100%"
               max={step.timeSec}
               value={step.timeSec - timeRemaining}
               mt={2}

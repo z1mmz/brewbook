@@ -21,6 +21,11 @@ export const useRecipe = (id) => {
       return undefined;
     },
     staleTime: 30_000,
+    retry: (failureCount, error) => {
+      const status = error?.response?.status;
+      if (status >= 400 && status < 500) return false;
+      return failureCount < 2;
+    },
   });
 
   const createRecipeMutation = useMutation({
@@ -64,7 +69,9 @@ export const useRecipe = (id) => {
   });
 
   return {
-    recipe: recipeQuery.data ?? [],
+    recipe: recipeQuery.data,
+    isLoading: recipeQuery.isLoading,
+    isError: recipeQuery.isError,
     createRecipe: (recipe) => createRecipeMutation.mutate(recipe),
     updateRecipe: (recipeId, recipe) => updateRecipeMutation.mutate({ recipeId, recipe }),
     deleteRecipe: (recipeId) => deleteRecipeMutation.mutate(recipeId),
