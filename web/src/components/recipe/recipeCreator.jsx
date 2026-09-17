@@ -1,31 +1,27 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
+import { Button, Heading, Text, VStack } from "@chakra-ui/react";
 import useRecipe from "../../hooks/useRecipe";
 import useBeans from "../../hooks/useBeans";
 import LoginContext from "../../contexts/loginContext";
+import LexicalRecipeEditor from "./lexicalEditor";
+import { normalizeDescription } from "./markdownUtils";
 
-const emptyStep = () => ({
-  title: "",
-  notes: "",
-  timeSec: "",
-  waterMl: "",
-});
-
-const stepToForm = (s) => ({
-  title: s.title ?? "",
-  notes: s.notes ?? "",
-  timeSec: s.timeSec !== undefined ? String(s.timeSec) : "",
-  waterMl: s.waterMl !== undefined ? String(s.waterMl) : "",
+const emptyStep = () => ({ title: "", notes: "", timeSec: "", waterMl: "" });
+const stepToForm = (step) => ({
+  title: step.title ?? "",
+  notes: step.notes ?? "",
+  timeSec: step.timeSec !== undefined ? String(step.timeSec) : "",
+  waterMl: step.waterMl !== undefined ? String(step.waterMl) : "",
 });
 
 export default function RecipeCreator() {
   const { id } = useParams();
-  const isEditMode = !!id;
-
-  const { recipe, createRecipe, updateRecipe } = useRecipe(id);
+  const isEditMode = Boolean(id);
+  const navigate = useNavigate();
+  const { recipe, isLoading, isError, createRecipe, updateRecipe } = useRecipe(id);
   const { loggedInUser } = useContext(LoginContext);
   const { beans } = useBeans();
-
   const [title, setTitle] = useState("");
   const [grind, setGrind] = useState("");
   const [beanId, setBeanId] = useState("");
@@ -38,415 +34,155 @@ export default function RecipeCreator() {
   const [submitError, setSubmitError] = useState(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  // Pre-populate fields when editing
   useEffect(() => {
-    if (isEditMode && recipe && recipe.title) {
+    if (isEditMode && recipe?.title) {
       setTitle(recipe.title ?? "");
       setGrind(recipe.grind ?? "");
       setWater(recipe.water !== undefined ? String(recipe.water) : "");
       setType(recipe.type ?? "pour_over");
-      setDescription(recipe.description ?? "");
+      setDescription(normalizeDescription(recipe.description));
       setDose(recipe.dose !== undefined ? String(recipe.dose) : "");
-      if (Array.isArray(recipe.steps) && recipe.steps.length > 0) {
-        setSteps(recipe.steps.map(stepToForm));
-      }
+      setSteps(Array.isArray(recipe.steps) && recipe.steps.length ? recipe.steps.map(stepToForm) : [emptyStep()]);
       setBeanId(recipe.bean?.id ?? "");
       setIced(recipe.iced ?? false);
     }
   }, [isEditMode, recipe]);
 
   const errors = useMemo(() => {
-    const e = {};
-
-    if (!title.trim()) e.title = "Recipe title is required";
-    if (!grind.trim()) e.grindSize = "Grind size is required";
-
-    const waterNum = Number(water);
-    if (!water || Number.isNaN(waterNum) || waterNum <= 0) {
-      e.waterTotalMl = "Total water (ml) must be a positive number";
-    }
-
-    const coffeeNum = Number(dose);
-    if (!dose || Number.isNaN(coffeeNum) || coffeeNum <= 0) {
-      e.coffeeGrams = "Coffee (g) must be a positive number";
-    }
-
-    const stepErrors = steps.map((s) => {
-      const se = {};
-      if (!s.title.trim()) se.title = "Step title is required";
-
-      if (s.timeSec !== "") {
-        const t = Number(s.timeSec);
-        if (Number.isNaN(t) || t < 0) se.timeSec = "Time must be >= 0";
-      }
-
-      if (s.waterMl !== "") {
-        const w = Number(s.waterMl);
-        if (Number.isNaN(w) || w < 0) se.waterMl = "Water must be >= 0";
-      }
-
-      return se;
+    const result = {};
+    if (!title.trim()) result.title = "Give your recipe a title.";
+    if (!grind.trim()) result.grind = "Add a grind size.";
+    if (!water || Number(water) <= 0) result.water = "Enter total water in millilitres.";
+    if (!dose || Number(dose) <= 0) result.dose = "Enter the coffee amount in grams.";
+    const stepErrors = steps.map((step) => {
+      const error = {};
+      if (!step.title.trim()) error.title = "Add a step name.";
+      if (step.timeSec !== "" && (Number.isNaN(Number(step.timeSec)) || Number(step.timeSec) < 0)) error.timeSec = "Use zero or more seconds.";
+      if (step.waterMl !== "" && (Number.isNaN(Number(step.waterMl)) || Number(step.waterMl) < 0)) error.waterMl = "Use zero or more millilitres.";
+      return error;
     });
-
-    if (stepErrors.some((se) => Object.keys(se).length > 0)) {
-      e.steps = stepErrors;
-    }
-
-    return e;
+    if (stepErrors.some((step) => Object.keys(step).length)) result.steps = stepErrors;
+    return result;
   }, [title, grind, water, dose, steps]);
 
-  const isValid = Object.keys(errors).length === 0;
-  const shownErrors = hasSubmitted ? errors : {};
-
   function updateStep(index, patch) {
-    setSteps((prev) =>
-      prev.map((s, i) => (i === index ? { ...s, ...patch } : s)),
-    );
+    setSteps((current) => current.map((step, stepIndex) => stepIndex === index ? { ...step, ...patch } : step));
   }
 
-  function addStep() {
-    setSteps((prev) => [...prev, emptyStep()]);
-  }
-
-  function removeStep(index) {
-    setSteps((prev) =>
-      prev.length === 1 ? prev : prev.filter((_, i) => i !== index),
-    );
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
+  function submit(event) {
+    event.preventDefault();
     setHasSubmitted(true);
     setSubmitError(null);
-
-    if (!isValid) {
-      setSubmitError("Please fix the errors above before submitting.");
+    if (Object.keys(errors).length) {
+      setSubmitError("Please complete the highlighted fields before publishing.");
       return;
     }
-
     const recipeData = {
-      title: title.trim(),
-      grind: grind.trim(),
-      water: Number(water),
-      dose: Number(dose),
-      type: type,
-      description: description.trim(),
-      iced,
-      steps: steps.map((s) => ({
-        title: s.title.trim(),
-        ...(s.notes === "" ? {} : { notes: s.notes.trim() }),
-        ...(s.timeSec === "" ? {} : { timeSec: Number(s.timeSec) }),
-        ...(s.waterMl === "" ? {} : { waterMl: Number(s.waterMl) }),
+      title: title.trim(), grind: grind.trim(), water: Number(water), dose: Number(dose), type,
+      description: description.trim(), iced, bean: beanId || null,
+      steps: steps.map((step) => ({
+        title: step.title.trim(),
+        ...(step.notes.trim() ? { notes: step.notes.trim() } : {}),
+        ...(step.timeSec !== "" ? { timeSec: Number(step.timeSec) } : {}),
+        ...(step.waterMl !== "" ? { waterMl: Number(step.waterMl) } : {}),
       })),
-      bean: beanId || null,
     };
-
-    if (isEditMode) {
-      updateRecipe(id, recipeData);
-    } else {
-      createRecipe(recipeData);
-    }
+    if (isEditMode) updateRecipe(id, recipeData);
+    else createRecipe(recipeData);
   }
 
-  const stepWaterSum = useMemo(() => {
-    return steps.reduce(
-      (acc, s) => acc + (s.waterMl === "" ? 0 : Number(s.waterMl) || 0),
-      0,
+  const shownErrors = hasSubmitted ? errors : {};
+  const stepWaterTotal = steps.reduce((total, step) => total + (Number(step.waterMl) || 0), 0);
+
+  if (isEditMode && !loggedInUser) {
+    return (
+      <VStack gap={4} align="center" mt={8}>
+        <Heading>Edit recipe</Heading>
+        <Text>Please log in to edit this recipe.</Text>
+        <Button onClick={() => navigate("/login")} colorScheme="blue">
+          Log In
+        </Button>
+      </VStack>
     );
-  }, [steps]);
+  }
+
+  if (isEditMode && isLoading) {
+    return <div className="recipe-loading">Loading recipe…</div>;
+  }
+
+  if (isEditMode && (isError || !recipe)) {
+    return <div className="recipe-loading">Recipe not found.</div>;
+  }
+
+  const ownerId = recipe?.user?.id ?? recipe?.user?._id;
+  const isOwner =
+    ownerId != null &&
+    loggedInUser?.id != null &&
+    String(ownerId) === String(loggedInUser.id);
+
+  if (isEditMode && !isOwner) {
+    return (
+      <VStack gap={4} align="center" mt={8}>
+        <Heading>Not allowed</Heading>
+        <Text>You can only edit recipes you created.</Text>
+        <Button asChild colorScheme="blue">
+          <Link to={`/recipes/${id}`}>Back to recipe</Link>
+        </Button>
+      </VStack>
+    );
+  }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{ maxWidth: 840, display: "grid", gap: 16 }}
-    >
-      <h2>{isEditMode ? "Edit recipe" : "Create a coffee recipe"}</h2>
+    <form className="recipe-editor" onSubmit={submit}>
+      <header className="editor-header">
+        <p className="eyebrow">{isEditMode ? "Edit story" : "New recipe"}</p>
+        <input className="recipe-title-input" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Name your brew" aria-label="Recipe title" />
+        {shownErrors.title && <div className="field-error">{shownErrors.title}</div>}
+        <p className="editor-subtitle">Share the method, details, and little choices that make this cup yours.</p>
+      </header>
 
-      <section
-        style={{
-          display: "grid",
-          gap: 12,
-          padding: 12,
-          border: "1px solid #ddd",
-          borderRadius: 8,
-        }}
-      >
-        <div style={{ display: "grid", gap: 6 }}>
-          <label>
-            Recipe title *
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., V60 15g - light roast"
-              style={{ width: "100%" }}
-            />
-          </label>
-          {shownErrors.title && (
-            <div style={{ color: "crimson" }}>{shownErrors.title}</div>
-          )}
-        </div>
+      <div className="recipe-editor-layout">
+        <main className="recipe-editor-main">
+          <section className="editor-card description-card">
+            <div className="section-heading"><div><p className="eyebrow">The story</p><h2>About this recipe</h2></div><span className="section-number">01</span></div>
+            <LexicalRecipeEditor value={description} onChange={setDescription} />
+          </section>
 
-        <div style={{ display: "grid", gap: 6 }}>
-          <label>
-            Grind size *
-            <input
-              value={grind}
-              onChange={(e) => setGrind(e.target.value)}
-              placeholder="e.g., Medium-fine / 18 clicks"
-              style={{ width: "100%" }}
-            />
-          </label>
-          {shownErrors.grindSize && (
-            <div style={{ color: "crimson" }}>{shownErrors.grindSize}</div>
-          )}
-        </div>
-        <div style={{ display: "grid", gap: 6 }}>
-          <label>
-            Description *
-            <input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g., Iced pour-over for hot days"
-              style={{ width: "100%" }}
-            />
-          </label>
-          {shownErrors.grindSize && (
-            <div style={{ color: "crimson" }}>{shownErrors.grindSize}</div>
-          )}
-        </div>
-
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
-        >
-          <div style={{ display: "grid", gap: 6 }}>
-            <label>
-              Total water (ml) *
-              <input
-                value={water}
-                onChange={(e) => setWater(e.target.value)}
-                inputMode="numeric"
-                placeholder="e.g., 250"
-                style={{ width: "100%" }}
-              />
-            </label>
-            {shownErrors.waterTotalMl && (
-              <div style={{ color: "crimson" }}>{shownErrors.waterTotalMl}</div>
-            )}
-          </div>
-
-          <div style={{ display: "grid", gap: 6 }}>
-            <label>
-              Coffee (g) *
-              <input
-                value={dose}
-                onChange={(e) => setDose(e.target.value)}
-                inputMode="numeric"
-                placeholder="e.g., 15"
-                style={{ width: "100%" }}
-              />
-            </label>
-            {shownErrors.coffeeGrams && (
-              <div style={{ color: "crimson" }}>{shownErrors.coffeeGrams}</div>
-            )}
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gap: 6 }}>
-          <label>Brew temperature</label>
-          <div style={{ display: "flex", gap: 16, marginTop: 4 }}>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                cursor: "pointer",
-              }}
-            >
-              <input
-                type="radio"
-                name="brewTemp"
-                checked={!iced}
-                onChange={() => setIced(false)}
-              />
-              Hot
-            </label>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                cursor: "pointer",
-              }}
-            >
-              <input
-                type="radio"
-                name="brewTemp"
-                checked={iced}
-                onChange={() => setIced(true)}
-              />
-              Iced
-            </label>
-          </div>
-        </div>
-
-        <div style={{ fontSize: 14, opacity: 0.8 }}>
-          Step water total (optional fields): <strong>{stepWaterSum}</strong> ml
-          {water && (
-            <>
-              {" "}
-              / target <strong>{water}</strong> ml
-            </>
-          )}
-        </div>
-
-        {loggedInUser && beans.length > 0 && (
-          <div style={{ display: "grid", gap: 6 }}>
-            <label>
-              Beans used (optional)
-              <select
-                value={beanId}
-                onChange={(e) => setBeanId(e.target.value)}
-                style={{ width: "100%", marginTop: 4 }}
-              >
-                <option value="">— None —</option>
-                {beans.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name} — {b.roaster}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        )}
-      </section>
-
-      <section style={{ display: "grid", gap: 12 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <h3 style={{ margin: 0 }}>Steps</h3>
-        </div>
-
-        {steps.map((step, idx) => {
-          const stepErr = shownErrors.steps?.[idx] ?? {};
-          return (
-            <div
-              key={idx}
-              style={{
-                padding: 12,
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                display: "grid",
-                gap: 10,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <strong>Step {idx + 1}</strong>
-                <button
-                  type="button"
-                  onClick={() => removeStep(idx)}
-                  disabled={steps.length === 1}
-                >
-                  Remove
-                </button>
-              </div>
-
-              <div style={{ display: "grid", gap: 6 }}>
-                <label>
-                  Title *
-                  <input
-                    value={step.title}
-                    onChange={(e) => updateStep(idx, { title: e.target.value })}
-                    placeholder="e.g., Bloom"
-                    style={{ width: "100%" }}
-                  />
-                </label>
-                {stepErr.title && (
-                  <div style={{ color: "crimson" }}>{stepErr.title}</div>
-                )}
-              </div>
-
-              <div style={{ display: "grid", gap: 6 }}>
-                <label>
-                  Notes
-                  <textarea
-                    value={step.notes}
-                    onChange={(e) => updateStep(idx, { notes: e.target.value })}
-                    placeholder="Instructions for the brewer.."
-                    style={{ width: "100%", minHeight: 70 }}
-                  />
-                </label>
-                {stepErr.notes && (
-                  <div style={{ color: "crimson" }}>{stepErr.notes}</div>
-                )}
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 12,
-                }}
-              >
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label>
-                    Time (seconds) — optional
-                    <input
-                      value={step.timeSec}
-                      onChange={(e) =>
-                        updateStep(idx, { timeSec: e.target.value })
-                      }
-                      inputMode="numeric"
-                      placeholder="e.g., 45"
-                      style={{ width: "100%" }}
-                    />
-                  </label>
-                  {stepErr.timeSec && (
-                    <div style={{ color: "crimson" }}>{stepErr.timeSec}</div>
-                  )}
-                </div>
-
-                <div style={{ display: "grid", gap: 6 }}>
-                  <label>
-                    Water (ml) — optional
-                    <input
-                      value={step.waterMl}
-                      onChange={(e) =>
-                        updateStep(idx, { waterMl: e.target.value })
-                      }
-                      inputMode="numeric"
-                      placeholder="e.g., 50"
-                      style={{ width: "100%" }}
-                    />
-                  </label>
-                  {stepErr.waterMl && (
-                    <div style={{ color: "crimson" }}>{stepErr.waterMl}</div>
-                  )}
-                </div>
-              </div>
+          <section className="editor-card steps-card">
+            <div className="section-heading"><div><p className="eyebrow">The method</p><h2>Brewing steps</h2></div><span className="section-number">02</span></div>
+            <p className="section-help">Break the brew into clear, timed moments. Water and time are optional, but helpful.</p>
+            <div className="steps-list">
+              {steps.map((step, index) => {
+                const stepError = shownErrors.steps?.[index] ?? {};
+                return <article className="step-editor" key={index}>
+                  <div className="step-number">{String(index + 1).padStart(2, "0")}</div>
+                  <div className="step-fields">
+                    <div className="step-heading-row"><input className="step-title-input" value={step.title} onChange={(event) => updateStep(index, { title: event.target.value })} placeholder="Step title, e.g. Bloom" aria-label={`Step ${index + 1} title`} /><button type="button" className="text-button danger" onClick={() => setSteps((current) => current.length === 1 ? current : current.filter((_, i) => i !== index))} disabled={steps.length === 1}>Remove</button></div>
+                    {stepError.title && <div className="field-error">{stepError.title}</div>}
+                    <textarea value={step.notes} onChange={(event) => updateStep(index, { notes: event.target.value })} placeholder="What should the brewer do?" rows={3} />
+                    <div className="step-meta-grid"><label>Time (seconds)<input value={step.timeSec} onChange={(event) => updateStep(index, { timeSec: event.target.value })} inputMode="numeric" placeholder="45" /></label><label>Water (ml)<input value={step.waterMl} onChange={(event) => updateStep(index, { waterMl: event.target.value })} inputMode="numeric" placeholder="60" /></label></div>
+                    {(stepError.timeSec || stepError.waterMl) && <div className="field-error">{stepError.timeSec || stepError.waterMl}</div>}
+                  </div>
+                </article>;
+              })}
             </div>
-          );
-        })}
-        <button type="button" onClick={addStep}>
-          + Add step
-        </button>
+            <button type="button" className="secondary-button add-step-button" onClick={() => setSteps((current) => [...current, emptyStep()])}>+ Add another step</button>
+          </section>
+        </main>
 
-        {submitError && <div style={{ color: "crimson" }}>{submitError}</div>}
-
-        <button type="submit">
-          {isEditMode ? "Save changes" : "Save recipe"}
-        </button>
-      </section>
+        <aside className="recipe-editor-sidebar">
+          <section className="editor-card details-card">
+            <div className="section-heading"><div><p className="eyebrow">At a glance</p><h2>Brew details</h2></div><span className="section-number">03</span></div>
+            <div className="details-fields"><label>Grind size<input value={grind} onChange={(event) => setGrind(event.target.value)} placeholder="Medium-fine" />{shownErrors.grind && <small className="field-error">{shownErrors.grind}</small>}</label><label>Total water<input value={water} onChange={(event) => setWater(event.target.value)} inputMode="numeric" placeholder="250" />{shownErrors.water && <small className="field-error">{shownErrors.water}</small>}</label><label>Coffee amount<input value={dose} onChange={(event) => setDose(event.target.value)} inputMode="numeric" placeholder="15" />{shownErrors.dose && <small className="field-error">{shownErrors.dose}</small>}</label></div>
+            <div className="temperature-toggle"><span>Temperature</span><div role="group" aria-label="Temperature"><button type="button" className={!iced ? "selected" : ""} onClick={() => setIced(false)}>☕ Hot</button><button type="button" className={iced ? "selected" : ""} onClick={() => setIced(true)}>🧊 Iced</button></div></div>
+            {loggedInUser && beans.length > 0 && <label>Beans used<select value={beanId} onChange={(event) => setBeanId(event.target.value)}><option value="">None selected</option>{beans.map((bean) => <option key={bean.id} value={bean.id}>{bean.name} — {bean.roaster}</option>)}</select></label>}
+            <div className="water-summary">Step water <strong>{stepWaterTotal} ml</strong>{water ? <> of <strong>{water} ml</strong></> : null}</div>
+          </section>
+          {submitError && <div className="submit-error">{submitError}</div>}
+          <button className="publish-button" type="submit">{isEditMode ? "Save changes" : "Publish recipe"}<span>→</span></button>
+          <p className="save-note">You can always edit this recipe later.</p>
+        </aside>
+      </div>
     </form>
   );
 }
