@@ -5,6 +5,7 @@ const useRecipes = ({ page = 1, pageSize = 10, search = "" }) => {
   const recipesQuery = useQuery({
     queryKey: ["recipes", page, pageSize, search],
     queryFn: () => recipeService.getAll({ page, pageSize, ...(search ? { search } : {}) }),
+    placeholderData: (previousData) => previousData,
   });
 
   return { data: recipesQuery.data ?? { metadata: {}, recipes: [] } };

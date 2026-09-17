@@ -13,6 +13,7 @@ const useSavedRecipes = ({ page = 1, pageSize = 10 } = {}) => {
         ? recipeService.getSavedRecipes({ page, pageSize })
         : Promise.resolve({ metadata: {}, recipes: [] }),
     enabled: !!loggedInUser,
+    placeholderData: (previousData) => previousData,
   });
 
   return { data: savedRecipesQuery.data ?? { metadata: {}, recipes: [] } };

@@ -13,6 +13,7 @@ const useMyRecipes = ({ page = 1, pageSize = 10 } = {}) => {
         ? recipeService.getByUser(loggedInUser.id, { page, pageSize })
         : Promise.resolve({ metadata: {}, recipes: [] }),
     enabled: !!loggedInUser,
+    placeholderData: (previousData) => previousData,
   });
 
   return { data: myRecipesQuery.data ?? { metadata: {}, recipes: [] } };
