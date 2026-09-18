@@ -54,16 +54,22 @@ function Runner({ isOpen, onClose, recipe }) {
         return total + waterMl * progress;
       }
       // No timer: show full step water once the step is active
-      if (stepStatus === "running" || stepStatus === "paused" || stepStatus === "completed") {
+      if (
+        stepStatus === "running" ||
+        stepStatus === "paused" ||
+        stepStatus === "completed"
+      ) {
         return total + waterMl;
       }
     }
-
     return total;
   }, 0);
 
   const totalRecipeWater = recipe?.water || 0;
   const displayWater = Math.round(cumulativeWater);
+  const stepTotalWater = steps
+    .slice(0, currentStepIndex + 1)
+    .reduce((total, step) => total + (step.waterMl || 0), 0);
 
   const handleFinish = () => onClose();
   const handleNext = () => (isLastStep ? handleFinish() : nextStep());
@@ -103,6 +109,7 @@ function Runner({ isOpen, onClose, recipe }) {
                     {currentStep.pourEndSec
                       ? ` by ${currentStep.pourEndSec}s`
                       : ""}
+                    {stepTotalWater && ` for a total of ${stepTotalWater}ml`}
                   </Text>
                 )}
 
@@ -135,7 +142,14 @@ function Runner({ isOpen, onClose, recipe }) {
                     p={4}
                     textAlign="center"
                   >
-                    <Text fontSize="xs" fontWeight="semibold" letterSpacing="widest" textTransform="uppercase" opacity={0.5} mb={1}>
+                    <Text
+                      fontSize="xs"
+                      fontWeight="semibold"
+                      letterSpacing="widest"
+                      textTransform="uppercase"
+                      opacity={0.5}
+                      mb={1}
+                    >
                       Scale target
                     </Text>
                     <HStack justify="center" align="baseline" gap={1}>
