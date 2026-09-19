@@ -9,6 +9,11 @@
   padding: 2.5rem 1rem 5rem;
   color: #202124;
 }
+/* Single source of vertical rhythm for the recipe page. Add or reorder
+   sections in the markup freely; the gap keeps them evenly spaced. */
+.recipe-page {
+  --section-gap: 2rem;
+}
 .recipe-editor .eyebrow,
 .recipe-page .eyebrow {
   margin: 0 0 0.35rem;
@@ -48,12 +53,17 @@
   gap: 1.5rem;
   align-items: start;
 }
+.recipe-page-layout {
+  margin-top: var(--section-gap);
+}
 .recipe-editor-main {
   display: grid;
   gap: 1.5rem;
   min-width: 0;
 }
 .recipe-page main {
+  display: grid;
+  gap: var(--section-gap);
   min-width: 0;
 }
 .recipe-editor-sidebar {
@@ -76,6 +86,10 @@
   background: #fffdfa;
   box-shadow: 0 8px 24px rgba(71, 48, 31, 0.06);
   padding: 1.5rem;
+}
+.recipe-reading-card {
+  font-size: 1rem;
+  line-height: 1.75;
 }
 .section-heading {
   margin-bottom: 1.25rem;
@@ -316,13 +330,6 @@
   padding: 0.45rem 0.7rem;
   font-size: 0.85rem;
 }
-.recipe-page-layout {
-  margin-top: 2rem;
-}
-.recipe-reading-card {
-  font-size: 1rem;
-  line-height: 1.75;
-}
 .recipe-prose > :first-child {
   margin-top: 0;
 }
@@ -365,7 +372,6 @@
   color: #9ca3af;
 }
 .recipe-bean {
-  margin: 1rem 0 2rem;
   color: #6b7280;
   font-size: 0.9rem;
 }
@@ -373,9 +379,8 @@
   margin-bottom: 1rem;
 }
 .recipe-reviews {
-  margin-top: 2.5rem;
   border-top: 1px solid #e5e7eb;
-  padding-top: 2rem;
+  padding-top: var(--section-gap);
 }
 .recipe-reviews h2 {
   color: #111827;
@@ -395,9 +400,6 @@
 }
 .recipe-step-card [data-part="body"] {
   color: #4b5563;
-}
-.recipe-actions {
-  gap: 0.75rem;
 }
 .recipe-actions button {
   border-radius: 6px;
